@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "960794272743",
+    "project_id": "decidish-93abc",
+    "storage_bucket": "decidish-93abc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:960794272743:android:1136d4ad596f70d635d342",
+        "android_client_info": {
+          "package_name": "com.alizaaiter.decidish"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBb7j_hjhNGEHGfQ4wkRbkirFChzW8DA08"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

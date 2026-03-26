@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeciDish Application: Implementation Report</title>
+  <style>
+    :root {
+      --text: #1a1a1a;
+      --muted: #444;
+      --border: #ccc;
+      --accent: #2c5282;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: var(--text);
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 12mm 18mm 16mm;
+      background: #fff;
+    }
+    h1 {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 18pt;
+      font-weight: 700;
+      text-align: center;
+      margin: 0 0 8mm;
+      color: var(--accent);
+      line-height: 1.25;
+    }
+    .meta {
+      text-align: center;
+      font-size: 10pt;
+      color: var(--muted);
+      margin-bottom: 10mm;
+    }
+    .meta p { margin: 0.35em 0; }
+    .cover-block {
+      border: 1px solid var(--border);
+      padding: 8mm;
+      margin-bottom: 10mm;
+      page-break-inside: avoid;
+    }
+    h2 {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 13pt;
+      margin: 6mm 0 3mm;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2mm;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      margin: 4mm 0 2mm;
+      page-break-after: avoid;
+    }
+    p { margin: 0 0 0.65em; text-align: justify; }
+    ul, ol { margin: 0.5em 0 0.8em 1.2em; }
+    li { margin-bottom: 0.35em; }
+    strong { font-weight: 600; }
+    .abstract {
+      font-size: 10.5pt;
+      margin-bottom: 6mm;
+    }
+    .keywords { font-size: 10pt; margin-bottom: 8mm; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin: 3mm 0 6mm;
+      page-break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 2.5mm 3mm;
+      vertical-align: top;
+    }
+    th {
+      background: #f5f5f5;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-weight: 600;
+      text-align: left;
+    }
+    .refs ol { padding-left: 1.4em; }
+    .refs li { margin-bottom: 0.5em; }
+    .end { text-align: center; font-style: italic; margin-top: 8mm; color: var(--muted); }
+    hr.sep {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 6mm 0;
+    }
+    @page {
+      size: A4;
+      margin: 18mm 16mm 20mm;
+    }
+    @media print {
+      body { padding: 0; max-width: none; }
+      a[href^="http"] { color: inherit; text-decoration: none; }
+      .no-print { display: none !important; }
+      h2 { page-break-before: auto; }
+      section.major { page-break-before: always; }
+      section.major:first-of-type { page-break-before: avoid; }
+    }
+    @media screen {
+      body { background: #e8e8e8; padding: 24px; }
+      .sheet {
+        background: #fff;
+        box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+        padding: 18mm 20mm 22mm;
+        max-width: 210mm;
+        margin: 0 auto 24px;
+      }
+      .print-hint {
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        background: #fff8e6;
+        border: 1px solid #e6c200;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        max-width: 210mm;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .print-hint code { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print print-hint">
+    <strong>Save as PDF:</strong> Use your browser’s <strong>Print</strong> dialog (Ctrl/Cmd+P) → choose <strong>Save as PDF</strong> / <strong>Microsoft Print to PDF</strong>. In print settings, select paper <strong>A4</strong>, margins <strong>Default</strong>, and enable <strong>Background graphics</strong> if tables look faint.
+  </div>
+
+  <div class="sheet">
+    <header>
+      <h1>DeciDish Application:<br />Implementation Report</h1>
+      <div class="meta">
+        <p><strong>Document type:</strong> Technical and academic implementation report</p>
+        <p><strong>Subject:</strong> Software changes and feature additions to the DeciDish meal-decision system</p>
+        <p><strong>Date:</strong> 26 March 2025</p>
+      </div>
+      <div class="cover-block">
+        <p><strong>Author:</strong> <em>[Student / developer name]</em></p>
+        <p><strong>Institution / course:</strong> <em>[Institution and course code, if applicable]</em></p>
+        <p><strong>Supervisor:</strong> <em>[Optional]</em></p>
+      </div>
+    </header>
+
+    <section>
+      <h2>Abstract</h2>
+      <p class="abstract">This report documents a coherent set of modifications to the DeciDish cross-platform application (Flutter client, Node.js/MongoDB backend) undertaken to improve user experience, recommendation integrity, and content discoverability. The work addressed survey navigation and meal-type consistency in the “Help me decide” flow; introduced stochastic diversification of ranked content when users have not specified cuisine preferences; implemented a browsable “Food library” with search; corrected external hyperlink behaviour for recipe sources and videos; aligned list interfaces for favorites and history with network-backed imagery; reordered primary navigation; and augmented import-script documentation regarding third-party data limits. The report describes objectives, design rationale, implementation scope, and suggested verification steps. Limitations inherent to external recipe APIs and client-side search are discussed.</p>
+      <p class="keywords"><strong>Keywords:</strong> human–computer interaction; meal recommendation; mobile applications; personalization; software engineering; REST APIs.</p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="major">
+      <h2>1. Introduction</h2>
+      <p>DeciDish is designed to assist users in choosing what to cook or eat by combining preference-aware scoring, social and feed features, and structured surveys. Prior to the reported changes, several interaction gaps were observed: users could not preview a survey result and return to the same list without dismissing the survey; relaxed database queries could mix incompatible meal types; users without explicit cuisine preferences often saw homogeneous top-ranked lists; recipe-related URLs failed silently on some devices; and certain list views did not reflect visual content already available in the data model. This report synthesizes the engineering response to those issues and the addition of a dedicated library experience.</p>
+      <p>The report is organized as follows: Section 2 states objectives; Section 3 outlines methodology and technology context; Section 4 details implementations by subsystem; Section 5 summarizes outcomes and testing guidance; Section 6 discusses limitations; Section 7 concludes; Section 8 lists references.</p>
+    </section>
+
+    <section class="major">
+      <h2>2. Objectives</h2>
+      <p>The following objectives guided the implementation work:</p>
+      <ol>
+        <li><strong>Survey–detail navigation:</strong> Preserve the modal survey context while allowing full-screen meal inspection with predictable back-stack behaviour.</li>
+        <li><strong>Semantic consistency:</strong> Constrain survey-derived meal suggestions so that user-selected meal types (e.g., breakfast vs. dessert) are not diluted by query relaxation or empty fallbacks.</li>
+        <li><strong>Preference-aware diversity:</strong> When no cuisine preferences are set, increase perceived variety without discarding the underlying scoring model when preferences are present.</li>
+        <li><strong>Content discovery:</strong> Provide an alphabetical, countable catalog of meals with local search affordances.</li>
+        <li><strong>Reliability of external links:</strong> Make “original recipe” and “watch video” actions succeed across common URL formats and mobile platform policies.</li>
+        <li><strong>Visual fidelity:</strong> Display meal imagery in favorites and history where the API supplies image URLs.</li>
+        <li><strong>Information architecture:</strong> Place “Home” and “Feed” in a conventional order in the bottom navigation bar.</li>
+      </ol>
+    </section>
+
+    <section class="major">
+      <h2>3. Methodology and Technical Context</h2>
+      <h3>3.1 Architecture</h3>
+      <p>The system follows a <strong>client–server</strong> pattern. The mobile client is implemented in <strong>Dart/Flutter</strong>; the server uses <strong>Node.js</strong> with <strong>Express</strong>, <strong>Mongoose</strong>, and <strong>MongoDB</strong>. Authentication-protected routes supply personalized data; public routes support catalog reads where configured.</p>
+      <h3>3.2 Approach</h3>
+      <p>Changes were implemented incrementally by subsystem (backend services, HTTP routes, Flutter screens, and platform manifests). Personalization logic reused existing helpers (<code>preferenceUtils</code>, <code>mealScoring</code>) to avoid duplicating cuisine-matching rules. Where behaviour depended on platform capabilities (e.g., Android 11 package visibility for intent resolution), native configuration files were updated alongside Dart code.</p>
+      <h3>3.3 Data sources</h3>
+      <p>Meal records may originate from imports aligned with <strong>TheMealDB</strong>-style fields (e.g., <code>themealdbId</code>, image URLs, ingredient lists). The public catalog size is finite; this constraint is acknowledged in documentation and affects expectations for library cardinality.</p>
+    </section>
+
+    <section class="major">
+      <h2>4. Implementation Details</h2>
+      <h3>4.1 “Help me decide” survey flow</h3>
+      <p><strong>Problem.</strong> Tapping a survey result previously closed the bottom sheet and returned a meal to the parent route, which then navigated to the recommendation screen—preventing a simple “preview then return to list” pattern.</p>
+      <p><strong>Solution.</strong> The survey widget now pushes the recommendation route on the <strong>root navigator</strong> and awaits return, without popping the sheet with the selected meal. The home screen no longer performs a redundant navigation when the survey completes. User-facing copy clarifies that the system back gesture or in-app back control returns to the suggestion list, and that the sheet may be dismissed when the user is finished.</p>
+      <p><strong>Outcome.</strong> Navigation semantics align with stacked routes: detail above sheet, list state preserved below.</p>
+
+      <h3>4.2 Survey meal-type integrity (backend)</h3>
+      <p><strong>Problem.</strong> Query relaxation previously removed <code>mealType</code>, and broad fallbacks could omit type filters, allowing cross-type contamination (e.g., lunch items in a breakfast survey).</p>
+      <p><strong>Solution.</strong> Relaxation steps were limited to preparation time, estimated cost, and calorie constraints. A dedicated fallback query retains <code>mealType</code> when the primary query returns no documents. A final in-memory filter enforces <code>meal.mealType === answers.mealType</code> when a type is specified.</p>
+      <p><strong>Outcome.</strong> Stronger alignment between user intent and retrieved candidates, at the cost of potentially empty results if the database lacks matching rows—a trade-off noted under limitations.</p>
+
+      <h3>4.3 Cuisine diversity without explicit preferences (backend)</h3>
+      <p><strong>Problem.</strong> With no cuisine filter, ranking by score and popularity can concentrate results in a single cuisine.</p>
+      <p><strong>Solution.</strong> New utilities (<code>hasPreferredCuisines</code>, <code>pickRandomizedTopFromSorted</code>, <code>randomizeTopPortion</code>) apply <strong>only</strong> when the user’s preferred-cuisine list is empty. Affected surfaces include feed sections, the primary recommendation endpoint’s selection policy, personalized meal listing order (with exceptions when a cuisine query parameter is used), and survey suggestion ordering.</p>
+      <p><strong>Outcome.</strong> Improved variety for users who have not committed to cuisine preferences; unchanged strict behaviour for users who have.</p>
+
+      <h3>4.4 Food library (client)</h3>
+      <p><strong>New functionality.</strong> A dedicated screen loads all meals via the existing catalog API, sorts them alphabetically by name, displays a total count, and lists items with thumbnail, title, and secondary metadata. Navigation is registered in the application router; the home screen exposes entry via a dedicated card.</p>
+      <p><strong>Search.</strong> A text field filters the loaded list <strong>client-side</strong> by substring match against name, cuisine, meal type, and tags, with result counts and empty-state messaging.</p>
+      <p><strong>Outcome.</strong> Improved transparency of corpus size and faster ad hoc lookup without additional server endpoints for search.</p>
+
+      <h3>4.5 Recipe and video hyperlinks (client and native config)</h3>
+      <p><strong>Problem.</strong> URLs lacking schemes failed parsing; Android 11+ restricted visibility of handlers for generic <code>http</code>/<code>https</code> intents; iOS may require declared query schemes for certain targets.</p>
+      <p><strong>Solution.</strong> URI normalization prepends <code>https://</code> where appropriate while preserving <code>mailto:</code> and <code>tel:</code>. Launch uses <code>canLaunchUrl</code> and <code>launchUrl</code> with external application mode and a platform-default fallback. The recommendation screen hydrates the full meal document when both recipe URLs are absent from the initial payload. Android <code>AndroidManifest.xml</code> declares <code>VIEW</code> intents for <code>http</code> and <code>https</code>; iOS <code>Info.plist</code> includes <code>youtube</code> in <code>LSApplicationQueriesSchemes</code> alongside existing <code>http</code>/<code>https</code> entries.</p>
+      <p><strong>Outcome.</strong> More predictable success rates for opening external resources after a full native rebuild.</p>
+
+      <h3>4.6 Favorites and history list imagery (client)</h3>
+      <p><strong>Problem.</strong> Rows used generic icons despite <code>imageUrl</code> being present in populated meal objects.</p>
+      <p><strong>Solution.</strong> Replaced placeholders with the shared <code>MealNetworkImage</code> component, consistent with other screens.</p>
+      <p><strong>Outcome.</strong> Visual continuity with the rest of the application and clearer scanability of lists.</p>
+
+      <h3>4.7 Bottom navigation order (client)</h3>
+      <p><strong>Change.</strong> The <code>PageView</code> and tab order were updated so <strong>Home</strong> is the first tab and <strong>Feed</strong> the second; default landing index remains zero, now corresponding to Home.</p>
+      <p><strong>Outcome.</strong> Alignment with common expectations for primary “hub” placement.</p>
+
+      <h3>4.8 Import script documentation (backend)</h3>
+      <p><strong>Change.</strong> Comments in the TheMealDB import script state that the public API exposes on the order of <strong>hundreds</strong> of recipes, not an unbounded catalog.</p>
+      <p><strong>Outcome.</strong> Sets realistic expectations for stakeholders and future maintainers.</p>
+    </section>
+
+    <section class="major">
+      <h2>5. Results and Verification</h2>
+      <p>Table 1 summarizes expected behaviours for manual or automated verification.</p>
+      <table>
+        <thead>
+          <tr><th>Area</th><th>Expected behaviour</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Survey</td><td>After opening a result, back navigation returns to the same suggestion list inside the sheet.</td></tr>
+          <tr><td>Survey</td><td>Meal type selected in the survey matches types of suggested meals (subject to data availability).</td></tr>
+          <tr><td>No cuisine prefs</td><td>Feed and recommendations exhibit varied cuisines relative to strict score-only ordering.</td></tr>
+          <tr><td>With cuisine prefs</td><td>Ordering and filtering respect preferences; no unintended shuffle of the strict ranked list beyond defined logic.</td></tr>
+          <tr><td>Food library</td><td>Count reflects loaded meals; list A–Z; search filters locally; tap opens detail.</td></tr>
+          <tr><td>Links</td><td>Normalized URLs open in an external browser or relevant app where permitted.</td></tr>
+          <tr><td>Favorites / history</td><td>Meal images render when URLs are valid.</td></tr>
+          <tr><td>Navigation</td><td>First tab: Home; second: Feed.</td></tr>
+        </tbody>
+      </table>
+      <p>Automated test coverage for these behaviours is left to project policy; the table supports structured manual QA.</p>
+    </section>
+
+    <section class="major">
+      <h2>6. Limitations and Future Work</h2>
+      <ol>
+        <li><strong>Corpus size.</strong> TheMealDB and similar sources impose an upper bound on imported meals; scaling beyond that requires additional ingestion pipelines or partnerships.</li>
+        <li><strong>Survey empty sets.</strong> Strict <code>mealType</code> filtering may yield no suggestions if the database is sparse for a type—future work could include graceful messaging or controlled relaxation with explicit user consent.</li>
+        <li><strong>Library search.</strong> Current search is <strong>client-side</strong> and loads the full list first; very large corpora may require server-side pagination and indexed search.</li>
+        <li><strong>Link availability.</strong> Many imported meals lack non-empty “original source” URLs; video links depend on provider fields—UX cannot compensate for missing data.</li>
+        <li><strong>Platform rebuilds.</strong> Native manifest and plist changes require full application rebuilds, not hot reload alone.</li>
+      </ol>
+    </section>
+
+    <section class="major">
+      <h2>7. Conclusion</h2>
+      <p>The reported work tightens alignment between user actions (survey choices, navigation, and preferences) and system behaviour, improves transparency via a searchable food library, and addresses practical mobile constraints for external links and list imagery. Backend changes favour correctness of meal-type constraints and controlled diversity; client changes favour navigation clarity and visual consistency. Together, these updates constitute a coherent increment toward a more dependable and usable DeciDish experience. Continued evaluation with real users and expanded test automation would further validate the design decisions described herein.</p>
+    </section>
+
+    <section class="major">
+      <h2>8. References</h2>
+      <div class="refs">
+        <ol>
+          <li>Flutter Team. (2024). <em>Flutter documentation: Navigation and routing.</em> Retrieved from https://docs.flutter.dev/</li>
+          <li>Google LLC. <em>url_launcher package.</em> Pub.dev. Retrieved from https://pub.dev/packages/url_launcher</li>
+          <li>Android Open Source Project. (n.d.). <em>Package visibility filtering on Android 11+.</em> Retrieved from https://developer.android.com/training/package-visibility</li>
+          <li>Apple Inc. (n.d.). <em>Information Property List Key Reference: LSApplicationQueriesSchemes.</em> Retrieved from https://developer.apple.com/documentation/bundleresources/information_property_list/lsapplicationqueriesschemes</li>
+          <li>TheMealDB. (n.d.). <em>TheMealDB API.</em> Retrieved from https://www.themealdb.com/api.php</li>
+          <li>Mongoose. (n.d.). <em>Mongoose documentation.</em> Retrieved from https://mongoosejs.com/docs/guide.html</li>
+        </ol>
+        <p><em>[Add course materials, textbooks, or supervisor-specified sources as required.]</em></p>
+      </div>
+    </section>
+
+    <section class="major">
+      <h2>Appendix A. File index (non-exhaustive)</h2>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Representative paths</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Survey UI</td><td><code>lib/widgets/help_me_decide_survey.dart</code></td></tr>
+          <tr><td>Home</td><td><code>lib/screens/home_screen.dart</code></td></tr>
+          <tr><td>Survey backend</td><td><code>backend/services/surveyMeals.js</code></td></tr>
+          <tr><td>Preferences utilities</td><td><code>backend/services/preferenceUtils.js</code></td></tr>
+          <tr><td>Feed / recommendations / meals routes</td><td><code>backend/routes/feed.js</code>, <code>recommendations.js</code>, <code>meals.js</code></td></tr>
+          <tr><td>Food library</td><td><code>lib/screens/meal_library_screen.dart</code></td></tr>
+          <tr><td>App routing</td><td><code>lib/main.dart</code></td></tr>
+          <tr><td>Recommendation / links</td><td><code>lib/screens/recommendation_screen.dart</code></td></tr>
+          <tr><td>Favorites / history</td><td><code>lib/screens/favorites_screen.dart</code>, <code>history_screen.dart</code></td></tr>
+          <tr><td>Tab shell</td><td><code>lib/screens/main_navigation_screen.dart</code></td></tr>
+          <tr><td>Android / iOS config</td><td><code>android/app/src/main/AndroidManifest.xml</code>, <code>ios/Runner/Info.plist</code></td></tr>
+          <tr><td>Import script</td><td><code>backend/scripts/importTheMealDB.js</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <p class="end">End of report.</p>
+  </div>
+</body>
+</html>
