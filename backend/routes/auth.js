@@ -183,8 +183,8 @@ router.put(
   [
     body('currentPassword').notEmpty().withMessage('Current password is required'),
     body('newPassword')
-      .isLength({ min: 8 })
-      .withMessage('New password must be at least 8 characters'),
+      .isLength({ min: 6 })
+      .withMessage('New password must be at least 6 characters'),
   ],
   async (req, res) => {
     try {

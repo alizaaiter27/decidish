@@ -76,8 +76,9 @@ class AuthApiService {
       },
       requireAuth: true,
     );
-    if (response['success'] == true && response['token'] != null) {
-      await AuthService.saveToken(response['token'] as String);
+    final token = response['token'];
+    if (response['success'] == true && token != null) {
+      await AuthService.saveToken(token is String ? token : token.toString());
     }
   }
 

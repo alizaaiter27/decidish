@@ -1,4 +1,5 @@
 import '../models/meal_model.dart';
+import '../models/meal_review_model.dart';
 import '../services/api_service.dart';
 import '../config/api_config.dart';
 
@@ -74,6 +75,26 @@ class MealApiService {
     return null;
   }
 
+  /// Community ratings + optional written reviews with author names.
+  static Future<List<MealReviewItem>> getMealReviews(String mealId) async {
+    final response = await ApiService.get(
+      '${ApiConfig.meals}/$mealId/reviews',
+      requireAuth: false,
+    );
+    if (response['success'] != true) {
+      return [];
+    }
+    final raw = response['reviews'];
+    if (raw is! List) return [];
+    return raw
+        .map(
+          (e) => MealReviewItem.fromJson(
+            Map<String, dynamic>.from(e as Map),
+          ),
+        )
+        .toList();
+  }
+
   /// [saveHistory] when true, server records this pick in meal history (use for "Decide for me" only).
   static Future<MealModel?> getRecommendation({
     String? mealType,
@@ -129,10 +150,45 @@ class MealApiService {
   }
 
   /// Persists a 1–5 star rating for this meal (used from feed).
-  static Future<void> rateMeal(String mealId, int rating) async {
+  /// When [syncReview] is true, sends [review] (may be empty to clear text).
+  /// When false, stars-only update leaves any existing written review unchanged.
+  ///
+  /// When [append] is true, always creates a **new** review row (multiple reviews
+  /// per meal). When false (default), updates the user's latest rating for that meal
+  /// (feed star taps).
+  static Future<void> rateMeal(
+    String mealId,
+    int rating, {
+    String? review,
+    bool syncReview = false,
+    bool append = false,
+  }) async {
+    final body = <String, dynamic>{'rating': rating};
+    if (syncReview) {
+      body['review'] = review ?? '';
+    }
+    if (append) {
+      body['append'] = true;
+    }
     await ApiService.post(
       '${ApiConfig.meals}/$mealId/rate',
-      {'rating': rating},
+      body,
+      requireAuth: true,
+    );
+  }
+
+  /// Deletes a specific meal rating row; server allows only the author.
+  static Future<void> deleteMealRating(String mealId, String ratingId) async {
+    await ApiService.delete(
+      '${ApiConfig.meals}/$mealId/ratings/$ratingId',
+      requireAuth: true,
+    );
+  }
+
+  /// Removes the current user's latest rating for this meal (feed: tap same star again).
+  static Future<void> removeMyLatestMealRating(String mealId) async {
+    await ApiService.delete(
+      '${ApiConfig.meals}/$mealId/rate',
       requireAuth: true,
     );
   }

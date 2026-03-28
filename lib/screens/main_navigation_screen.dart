@@ -3,7 +3,7 @@ import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/screens/home_screen.dart';
 import 'package:decidish/screens/favorites_screen.dart';
 import 'package:decidish/screens/feed_screen.dart';
-import 'package:decidish/screens/history_screen.dart';
+import 'package:decidish/screens/chats_inbox_screen.dart';
 import 'package:decidish/screens/profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -68,18 +68,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Main Content
-          PageView(
-            controller: _pageController,
-            onPageChanged: _onPageChanged,
-            physics: const BouncingScrollPhysics(),
-            children: const [
-              HomeScreen(),
-              FeedScreen(),
-              FavoritesScreen(),
-              HistoryScreen(),
-              ProfileScreen(),
-            ],
+          // Main Content — [Positioned.fill] gives each tab tight height; a bare
+          // [PageView] in a [Stack] can get loose constraints and break scroll views.
+          Positioned.fill(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              physics: const BouncingScrollPhysics(),
+              children: const [
+                HomeScreen(),
+                FeedScreen(),
+                FavoritesScreen(),
+                ChatsInboxScreen(),
+                ProfileScreen(),
+              ],
+            ),
           ),
 
           // Custom Bottom Navigation
@@ -119,7 +122,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
             _buildNavItem(Icons.home_rounded, 'Home', 0),
             _buildNavItem(Icons.dynamic_feed_rounded, 'Feed', 1),
             _buildNavItem(Icons.favorite_rounded, 'Favorites', 2),
-            _buildNavItem(Icons.history_rounded, 'History', 3),
+            _buildNavItem(Icons.chat_bubble_rounded, 'Chats', 3),
             _buildNavItem(Icons.person_rounded, 'Profile', 4),
           ],
         ),

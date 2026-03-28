@@ -195,38 +195,59 @@ class _SignUpScreenState extends State<SignUpScreen>
           ),
 
           SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    const AppLogo(size: 100, backgroundColor: AppColors.white),
-                    const SizedBox(height: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 4),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: AppColors.white,
+                        size: 28,
+                      ),
+                      tooltip: 'Back to login',
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                    child: Column(
+                      children: [
+                        const AppLogo(
+                          size: 88,
+                          backgroundColor: AppColors.white,
+                        ),
+                        const SizedBox(height: 28),
 
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.1),
-                          end: Offset.zero,
-                        ).animate(_fadeAnimation),
-                        child: Container(
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary,
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
+                        FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.1),
+                              end: Offset.zero,
+                            ).animate(_fadeAnimation),
+                            child: Container(
+                              padding: const EdgeInsets.all(32),
+                              decoration: BoxDecoration(
+                                color: AppColors.secondary,
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              children: [
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  children: [
                                 const Text(
                                   'Sign up',
                                   style: TextStyle(
@@ -418,9 +439,13 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 ),
                                 const SizedBox(height: 24),
 
-                                // Sign Up Button (same placement)
                                 _isLoading
-                                    ? const CircularProgressIndicator()
+                                    ? const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 12,
+                                        ),
+                                        child: CircularProgressIndicator(),
+                                      )
                                     : ScaleTransition(
                                         scale: _buttonScaleAnimation,
                                         child: SizedBox(
@@ -450,54 +475,17 @@ class _SignUpScreenState extends State<SignUpScreen>
                                           ),
                                         ),
                                       ),
-                                const SizedBox(height: 20),
-
-                                // OR Divider (unchanged)
-                                const Row(
-                                  children: [
-                                    Expanded(child: Divider()),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                      ),
-                                      child: Text('OR'),
-                                    ),
-                                    Expanded(child: Divider()),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-
-                                // Google Sign Up (unchanged)
-                                OutlinedButton.icon(
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.g_mobiledata,
-                                    size: 30,
-                                  ),
-                                  label: const Text('Continue with Google'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.textDark,
-                                    side: const BorderSide(
-                                      color: AppColors.textLight,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],

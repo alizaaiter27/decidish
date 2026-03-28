@@ -11,6 +11,11 @@ const postSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  meal: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Meal',
+    default: null,
+  },
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

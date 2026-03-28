@@ -1,3 +1,4 @@
+import 'package:decidish/config/api_config.dart';
 import 'package:decidish/services/api_service.dart';
 
 class MessageService {
@@ -6,19 +7,22 @@ class MessageService {
     String toUserId,
     String content,
   ) async {
-    final res = await ApiService.post('/api/messages', {
-      'toUserId': toUserId,
-      'content': content,
-    }, requireAuth: true);
+    final res = await ApiService.post(
+      ApiConfig.messages,
+      {'toUserId': toUserId, 'content': content},
+      requireAuth: true,
+    );
     return res;
   }
 
   // Get messages between current user and another
   static Future<List<dynamic>> getMessages(String userId) async {
     final res = await ApiService.get(
-      '/api/messages/$userId',
+      '${ApiConfig.messages}/$userId',
       requireAuth: true,
     );
-    return res['messages'] as List<dynamic>;
+    final raw = res['messages'];
+    if (raw is! List) return [];
+    return List<dynamic>.from(raw);
   }
 }

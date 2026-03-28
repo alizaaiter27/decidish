@@ -15,6 +15,9 @@ import 'screens/friends_screen.dart';
 import 'screens/friend_requests_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/add_friend_screen.dart';
+import 'screens/friend_posts_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/history_screen.dart';
 import 'utils/app_colors.dart';
 import 'utils/page_transitions.dart';
 
@@ -49,12 +52,12 @@ class DeciDishApp extends StatelessWidget {
         colorScheme: colorScheme,
         scaffoldBackgroundColor: AppColors.background,
       ),
-      initialRoute: '/',
+      home: const WelcomeScreen(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/':
             return FadePageRoute(
-              page: const WelcomeScreen(),
+              page: const LoginScreen(),
               settings: settings,
             );
           case '/login':
@@ -99,6 +102,11 @@ class DeciDishApp extends StatelessWidget {
               page: const AddFriendScreen(),
               settings: settings,
             );
+          case '/friend_posts':
+            return SlidePageRoute(
+              page: const FriendPostsScreen(),
+              settings: settings,
+            );
           case '/preferences':
             return SlidePageRoute(
               page: const PreferencesScreen(),
@@ -114,9 +122,19 @@ class DeciDishApp extends StatelessWidget {
               page: const MealLibraryScreen(),
               settings: settings,
             );
+          case '/notifications':
+            return SlidePageRoute(
+              page: const NotificationsScreen(),
+              settings: settings,
+            );
+          case '/history':
+            return SlidePageRoute(
+              page: const HistoryScreen(),
+              settings: settings,
+            );
           default:
             return FadePageRoute(
-              page: const WelcomeScreen(),
+              page: const LoginScreen(),
               settings: settings,
             );
         }

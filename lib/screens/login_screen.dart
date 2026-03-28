@@ -118,7 +118,10 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() => _isLoading = false);
 
       if (response['success'] == true) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/home',
+          (route) => false,
+        );
       } else {
         ScaffoldMessenger.of(
           context,
@@ -357,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     GestureDetector(
                                       onTap: () {
-                                        Navigator.pushReplacementNamed(
+                                        Navigator.pushNamed(
                                           context,
                                           '/signup',
                                         );

@@ -102,7 +102,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
 
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/home',
+          (route) => false,
+        );
       }
     } catch (e) {
       if (mounted) {

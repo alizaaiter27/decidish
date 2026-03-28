@@ -27,6 +27,26 @@ function toMealPayload(doc, extra = {}) {
   return { ...o, ...extra };
 }
 
+function feedPostJson(p, uid) {
+  const likes = p.likes || [];
+  const liked = likes.some((id) => id.equals(uid));
+  const meal =
+    p.meal && p.meal._id
+      ? { id: p.meal._id, name: p.meal.name, imageUrl: p.meal.imageUrl || '' }
+      : null;
+  return {
+    id: p._id,
+    content: p.content,
+    createdAt: p.createdAt,
+    likesCount: likes.length,
+    likedByMe: liked,
+    user: p.user
+      ? { id: p.user._id, name: p.user.name, email: p.user.email }
+      : null,
+    meal,
+  };
+}
+
 function pickQuickOptions(scoredList, n = 2) {
   if (scoredList.length === 0) return [];
   const pool = scoredList.slice(0, Math.min(8, scoredList.length));
@@ -127,22 +147,10 @@ router.get('/', async (req, res) => {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .limit(20)
-      .populate('user', 'name email');
+      .populate('user', 'name email')
+      .populate('meal', 'name imageUrl');
 
-    const communityPosts = posts.map((p) => {
-      const likes = p.likes || [];
-      const liked = likes.some((id) => id.equals(uid));
-      return {
-        id: p._id,
-        content: p.content,
-        createdAt: p.createdAt,
-        likesCount: likes.length,
-        likedByMe: liked,
-        user: p.user
-          ? { id: p.user._id, name: p.user.name, email: p.user.email }
-          : null,
-      };
-    });
+    const communityPosts = posts.map((p) => feedPostJson(p, uid));
 
     const friendIds = (user.friends || []).filter(Boolean);
     let friendsActivity = [];
@@ -150,29 +158,46 @@ router.get('/', async (req, res) => {
       const fp = await Post.find({ user: { $in: friendIds } })
         .sort({ createdAt: -1 })
         .limit(12)
-        .populate('user', 'name email');
+        .populate('user', 'name email')
+        .populate('meal', 'name imageUrl');
 
-      friendsActivity = fp.map((p) => {
-        const likes = p.likes || [];
-        const liked = likes.some((id) => id.equals(uid));
-        return {
-          id: p._id,
-          content: p.content,
-          createdAt: p.createdAt,
-          likesCount: likes.length,
-          likedByMe: liked,
-          user: p.user
-            ? { id: p.user._id, name: p.user.name, email: p.user.email }
-            : null,
-        };
-      });
+      friendsActivity = fp.map((p) => feedPostJson(p, uid));
     }
 
-    const ratings = await MealRating.find({ user: req.user.id }).select('meal rating');
+    const ratings = await MealRating.find({ user: req.user.id }).select(
+      'meal rating review updatedAt'
+    );
+    const byMeal = new Map();
+    for (const r of ratings) {
+      const mid = r.meal.toString();
+      if (!byMeal.has(mid)) byMeal.set(mid, []);
+      byMeal.get(mid).push(r);
+    }
+
+    const hasText = (x) => x.review && String(x.review).trim().length > 0;
     const myRatings = {};
-    ratings.forEach((r) => {
-      myRatings[r.meal.toString()] = r.rating;
-    });
+    const myReviewTexts = {};
+
+    for (const [mid, list] of byMeal) {
+      const starOnly = list.filter((x) => !hasText(x));
+      starOnly.sort(
+        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
+      );
+      const withText = list.filter(hasText);
+      withText.sort(
+        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
+      );
+
+      if (starOnly.length) {
+        myRatings[mid] = starOnly[0].rating;
+      } else if (withText.length) {
+        myRatings[mid] = withText[0].rating;
+      }
+
+      if (withText.length) {
+        myReviewTexts[mid] = String(withText[0].review).trim();
+      }
+    }
 
     const quickDecide = pickQuickOptions(scored, 2);
 
@@ -181,6 +206,7 @@ router.get('/', async (req, res) => {
       mealType: currentMealType,
       streakHint: user.streak?.current ?? 0,
       myRatings,
+      myReviewTexts,
       sections: [
         {
           id: 'for_you',

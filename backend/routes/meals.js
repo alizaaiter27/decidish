@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const Meal = require('../models/Meal');
 const User = require('../models/User');
@@ -288,11 +289,14 @@ router.get('/', async (req, res) => {
 });
 
 // @route   POST /api/meals/:id/rate
-// @desc    Rate a meal (1–5 stars), upserts per user
+// @desc    Rate a meal (1–5). Non-append feed taps only update a star-only row
+//         (empty review) so written reviews are never overwritten. append=true
+//         creates a new row (written review flow).
 // @access  Private
 router.post('/:id/rate', protect, async (req, res) => {
   try {
     const { rating } = req.body;
+    const append = req.body.append === true || req.body.append === 'true';
     const r = Number(rating);
     if (!Number.isFinite(r) || r < 1 || r > 5) {
       return res.status(400).json({
@@ -306,19 +310,212 @@ router.post('/:id/rate', protect, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Meal not found' });
     }
 
-    await MealRating.findOneAndUpdate(
-      { user: req.user.id, meal: meal._id },
-      { user: req.user.id, meal: meal._id, rating: r },
-      { upsert: true, new: true, runValidators: true }
-    );
+    const uid = req.user.id;
+    const mid = meal._id;
 
+    const trimReview = (raw) => {
+      if (raw == null || raw === '') return '';
+      return String(raw).trim().slice(0, 2000);
+    };
+
+    if (append) {
+      const reviewText = Object.prototype.hasOwnProperty.call(req.body, 'review')
+        ? trimReview(req.body.review)
+        : '';
+      const saved = await MealRating.create({
+        user: uid,
+        meal: mid,
+        rating: r,
+        review: reviewText,
+      });
+      return res.json({
+        success: true,
+        mealId: meal._id,
+        rating: r,
+        review: saved.review || '',
+        append: true,
+        id: saved._id,
+      });
+    }
+
+    // Feed star taps: only update a "star-only" row (empty review). Never update
+    // rows that contain written text, so changing stars does not affect reviews.
+    const emptyReviewQuery = {
+      user: uid,
+      meal: mid,
+      $or: [{ review: '' }, { review: { $exists: false } }],
+    };
+
+    let starOnlyDoc = await MealRating.findOne(emptyReviewQuery).sort({
+      updatedAt: -1,
+    });
+
+    if (starOnlyDoc) {
+      starOnlyDoc.rating = r;
+      if (Object.prototype.hasOwnProperty.call(req.body, 'review')) {
+        starOnlyDoc.review = trimReview(req.body.review);
+      }
+      await starOnlyDoc.save();
+      return res.json({
+        success: true,
+        mealId: meal._id,
+        rating: r,
+        review: starOnlyDoc.review || '',
+        append: false,
+        id: starOnlyDoc._id,
+      });
+    }
+
+    const created = await MealRating.create({
+      user: uid,
+      meal: mid,
+      rating: r,
+      review: Object.prototype.hasOwnProperty.call(req.body, 'review')
+        ? trimReview(req.body.review)
+        : '',
+    });
     res.json({
       success: true,
       mealId: meal._id,
       rating: r,
+      review: created.review || '',
+      append: false,
+      id: created._id,
     });
   } catch (error) {
     console.error('Rate meal error:', error);
+    const dupKey =
+      error.code === 11000 ||
+      (typeof error.message === 'string' && error.message.includes('E11000'));
+    if (dupKey) {
+      return res.status(409).json({
+        success: false,
+        message:
+          'Duplicate rating constraint. Restart the API server once so the database can drop the old unique index.',
+      });
+    }
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route   DELETE /api/meals/:id/rate
+// @desc    Remove the current user's star-only row (feed quick rating), not written reviews
+// @access  Private
+router.delete('/:id/rate', protect, async (req, res) => {
+  try {
+    const mealId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(mealId)) {
+      return res.status(400).json({ success: false, message: 'Invalid meal id' });
+    }
+
+    const meal = await Meal.findById(mealId);
+    if (!meal) {
+      return res.status(404).json({ success: false, message: 'Meal not found' });
+    }
+
+    const doc = await MealRating.findOne({
+      user: req.user.id,
+      meal: meal._id,
+      $or: [{ review: '' }, { review: { $exists: false } }],
+    }).sort({ updatedAt: -1 });
+
+    if (!doc) {
+      return res.status(404).json({
+        success: false,
+        message: 'No star rating to remove',
+      });
+    }
+
+    await MealRating.deleteOne({ _id: doc._id });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Remove meal rating error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route   DELETE /api/meals/:id/ratings/:ratingId
+// @desc    Delete one rating row owned by the current user
+// @access  Private — register before GET /:id
+router.delete('/:id/ratings/:ratingId', protect, async (req, res) => {
+  try {
+    const { id: mealId, ratingId } = req.params;
+    if (
+      !mongoose.Types.ObjectId.isValid(mealId) ||
+      !mongoose.Types.ObjectId.isValid(ratingId)
+    ) {
+      return res.status(400).json({ success: false, message: 'Invalid id' });
+    }
+
+    const meal = await Meal.findById(mealId);
+    if (!meal) {
+      return res.status(404).json({ success: false, message: 'Meal not found' });
+    }
+
+    const deleted = await MealRating.findOneAndDelete({
+      _id: ratingId,
+      meal: mealId,
+      user: req.user.id,
+    });
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: 'Review not found or not allowed',
+      });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete meal rating error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @route   GET /api/meals/:id/reviews
+// @desc    Written reviews (non-empty text) by default; ?includeStarOnly=true for all rows
+// @access  Public — must be registered before GET /:id
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    const meal = await Meal.findById(req.params.id);
+    if (!meal) {
+      return res.status(404).json({
+        success: false,
+        message: 'Meal not found',
+      });
+    }
+
+    const rows = await MealRating.find({ meal: req.params.id })
+      .populate('user', 'name email')
+      .sort({ updatedAt: -1 })
+      .limit(80)
+      .lean();
+
+    const includeStarOnly = req.query.includeStarOnly === 'true';
+
+    let reviews = rows.map((r) => ({
+      id: r._id,
+      rating: r.rating,
+      review: r.review && String(r.review).trim() ? String(r.review).trim() : '',
+      updatedAt: r.updatedAt,
+      user: r.user
+        ? {
+            id: r.user._id,
+            name: r.user.name,
+            email: r.user.email,
+          }
+        : null,
+    }));
+
+    if (!includeStarOnly) {
+      reviews = reviews.filter(
+        (x) => x.review && String(x.review).trim().length > 0,
+      );
+    }
+
+    res.json({ success: true, reviews });
+  } catch (error) {
+    console.error('List meal reviews error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

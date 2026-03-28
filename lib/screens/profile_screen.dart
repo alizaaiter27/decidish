@@ -53,113 +53,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _showChangePasswordDialog() async {
-    final currentController = TextEditingController();
-    final nextController = TextEditingController();
-    final confirmController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
     if (!mounted) return;
-
-    await showDialog<void>(
+    final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Change password'),
-          content: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: currentController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Current password',
-                    ),
-                    validator: (v) =>
-                        (v == null || v.isEmpty) ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: nextController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'New password (min 8 characters)',
-                    ),
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Required';
-                      if (v.length < 8) return 'At least 8 characters';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: confirmController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Confirm new password',
-                    ),
-                    validator: (v) {
-                      if (v != nextController.text) {
-                        return 'Does not match';
-                      }
-                      return null;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                if (formKey.currentState?.validate() != true) return;
-                try {
-                  await AuthApiService.changePassword(
-                    currentPassword: currentController.text,
-                    newPassword: nextController.text,
-                  );
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Password updated'),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  final msg = e is ApiException
-                      ? e.message
-                      : e.toString();
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(content: Text(msg), backgroundColor: Colors.red),
-                    );
-                  }
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => const _ChangePasswordDialog(),
     );
-
-    currentController.dispose();
-    nextController.dispose();
-    confirmController.dispose();
+    if (!mounted) return;
+    if (ok == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password updated')),
+      );
+    }
   }
 
   Future<void> _logout() async {
     try {
       await AuthApiService.logout();
       if (mounted) {
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/login',
+          (route) => false,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -219,9 +134,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               context,
                               Icons.group,
                               'Friends',
-                              'View and manage your friends',
+                              'Search, add people, and see requests',
                               () {
-                                Navigator.pushNamed(context, '/friends');
+                                Navigator.of(context, rootNavigator: true)
+                                    .pushNamed('/friends');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildSettingItem(
+                              context,
+                              Icons.history_rounded,
+                              'Meal history',
+                              'Meals you tried from recommendations',
+                              () {
+                                Navigator.of(context, rootNavigator: true)
+                                    .pushNamed('/history');
                               },
                             ),
                             const SizedBox(height: 8),
@@ -489,6 +416,132 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         onTap: onTap,
       ),
+    );
+  }
+}
+
+/// Owns [TextEditingController]s so they are disposed after the route is
+/// removed — disposing them immediately after [showDialog] returns can crash
+/// because the dialog subtree may still be unmounting.
+class _ChangePasswordDialog extends StatefulWidget {
+  const _ChangePasswordDialog();
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _current;
+  late final TextEditingController _next;
+  late final TextEditingController _confirm;
+  bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _current = TextEditingController();
+    _next = TextEditingController();
+    _confirm = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _current.dispose();
+    _next.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_formKey.currentState?.validate() != true) return;
+    setState(() => _submitting = true);
+    try {
+      await AuthApiService.changePassword(
+        currentPassword: _current.text,
+        newPassword: _next.text,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      final msg = e is ApiException ? e.message : e.toString();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+        );
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Change password'),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _current,
+                obscureText: true,
+                enabled: !_submitting,
+                decoration: const InputDecoration(
+                  labelText: 'Current password',
+                ),
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? 'Required' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _next,
+                obscureText: true,
+                enabled: !_submitting,
+                decoration: const InputDecoration(
+                  labelText: 'New password (min 6 characters)',
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Required';
+                  if (v.length < 6) return 'At least 6 characters';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _confirm,
+                obscureText: true,
+                enabled: !_submitting,
+                decoration: const InputDecoration(
+                  labelText: 'Confirm new password',
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Required';
+                  if (v != _next.text) return 'Does not match';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _submitting ? null : () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _submitting ? null : _submit,
+          child: _submitting
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save'),
+        ),
+      ],
     );
   }
 }

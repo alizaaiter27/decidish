@@ -35,4 +35,7 @@ class ApiConfig {
   static const String history = '/history';
   static const String feed = '/feed';
   static const String posts = '/posts';
+  static const String friends = '/friends';
+  static const String messages = '/messages';
+  static const String usersSearch = '/users/search';
 }

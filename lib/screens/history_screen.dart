@@ -156,37 +156,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textDark),
+          onPressed: () => Navigator.of(context).pop(),
+          tooltip: 'Back',
+        ),
+        title: const Text(
+          'History',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDark,
+          ),
+        ),
+        actions: [
+          if (_history.isNotEmpty)
+            IconButton(
+              onPressed: _clearHistory,
+              icon: const Icon(
+                Icons.clear_all_rounded,
+                color: AppColors.primary,
+              ),
+              tooltip: 'Clear history',
+            ),
+        ],
+      ),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'History',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  if (_history
-                      .isNotEmpty) // Only show button when there's history to clear
-                    IconButton(
-                      onPressed: _clearHistory,
-                      icon: const Icon(
-                        Icons.clear_all,
-                        color: AppColors.primary,
-                      ),
-                      tooltip: 'Clear History',
-                    ),
-                ],
-              ),
-            ),
-
             // Content
             Expanded(
               child: _isLoading

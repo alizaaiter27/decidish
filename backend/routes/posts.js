@@ -2,11 +2,48 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Meal = require('../models/Meal');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
 router.use(protect);
+
+// Posts from a specific user (only if they are in your friends list)
+// GET /api/posts/user/:userId — must be registered before GET /
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const targetId = req.params.userId;
+    const me = await User.findById(req.user.id).select('friends');
+    if (!me) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    const isFriend = (me.friends || []).some((id) => id.toString() === targetId);
+    if (!isFriend) {
+      return res.status(403).json({ success: false, message: 'You can only view posts from friends' });
+    }
+    const posts = await Post.find({ user: targetId })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .populate('user', 'name email')
+      .populate('meal', 'name imageUrl');
+
+    const list = posts.map((p) => serializePost(p, req.user.id));
+    res.json({ success: true, posts: list });
+  } catch (error) {
+    console.error('List user posts error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+function mealSummary(m) {
+  if (!m || !m._id) return null;
+  return {
+    id: m._id,
+    name: m.name,
+    imageUrl: m.imageUrl || '',
+  };
+}
 
 function serializePost(p, userId) {
   const uid = new mongoose.Types.ObjectId(userId);
@@ -21,6 +58,7 @@ function serializePost(p, userId) {
     user: p.user
       ? { id: p.user._id, name: p.user.name, email: p.user.email }
       : null,
+    meal: mealSummary(p.meal),
   };
 }
 
@@ -29,16 +67,30 @@ function serializePost(p, userId) {
 router.post('/', async (req, res) => {
   try {
     const userId = req.user.id;
-    const { content } = req.body;
+    const { content, mealId } = req.body;
 
     if (!content || !content.trim()) {
       return res.status(400).json({ success: false, message: 'Content is required' });
     }
 
-    const post = await Post.create({ user: userId, content: content.trim() });
-    await post.populate('user', 'name email');
+    let mealRef = null;
+    if (mealId) {
+      const mealDoc = await Meal.findById(mealId);
+      if (!mealDoc) {
+        return res.status(400).json({ success: false, message: 'Meal not found' });
+      }
+      mealRef = mealDoc._id;
+    }
 
-    res.status(201).json({ success: true, post });
+    const post = await Post.create({
+      user: userId,
+      content: content.trim(),
+      meal: mealRef,
+    });
+    await post.populate('user', 'name email');
+    await post.populate('meal', 'name imageUrl');
+
+    res.status(201).json({ success: true, post: serializePost(post, req.user.id) });
   } catch (error) {
     console.error('Create post error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -52,7 +104,8 @@ router.get('/', async (req, res) => {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .limit(50)
-      .populate('user', 'name email');
+      .populate('user', 'name email')
+      .populate('meal', 'name imageUrl');
 
     const list = posts.map((p) => serializePost(p, req.user.id));
 
@@ -77,7 +130,10 @@ router.post('/:id/like', async (req, res) => {
       post.likes.push(uid);
       await post.save();
     }
-    await post.populate('user', 'name email');
+    await post.populate([
+      { path: 'user', select: 'name email' },
+      { path: 'meal', select: 'name imageUrl' },
+    ]);
     res.json({
       success: true,
       ...serializePost(post, req.user.id),
@@ -98,7 +154,10 @@ router.delete('/:id/like', async (req, res) => {
     const uid = req.user.id;
     post.likes = (post.likes || []).filter((id) => id.toString() !== uid);
     await post.save();
-    await post.populate('user', 'name email');
+    await post.populate([
+      { path: 'user', select: 'name email' },
+      { path: 'meal', select: 'name imageUrl' },
+    ]);
     res.json({
       success: true,
       ...serializePost(post, req.user.id),

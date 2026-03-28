@@ -132,7 +132,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       opacity: _buttonAnimation.value,
                       child: _AnimatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/login');
+                          Navigator.pushReplacementNamed(context, '/login');
                         },
                         child: const Text(
                           'Get Started !',

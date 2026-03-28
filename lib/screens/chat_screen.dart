@@ -19,17 +19,19 @@ class _ChatScreenState extends State<ChatScreen> {
   String _friendName = '';
   String? _currentUserId;
   final ScrollController _scrollController = ScrollController();
+  bool _parsedArgs = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_parsedArgs) return;
     final args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-    if (args != null) {
-      _friendId = args['userId'] as String?;
-      _friendName = args['name'] as String? ?? '';
-      _initializeAndLoad();
-    }
+    if (args == null) return;
+    _parsedArgs = true;
+    _friendId = args['userId']?.toString();
+    _friendName = args['name']?.toString() ?? '';
+    _initializeAndLoad();
   }
 
   Future<void> _initializeAndLoad() async {
@@ -103,6 +105,13 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            Navigator.of(context, rootNavigator: true).maybePop();
+          },
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        ),
         title: Text(_friendName.isNotEmpty ? _friendName : 'Chat'),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textDark,

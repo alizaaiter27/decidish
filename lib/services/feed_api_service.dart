@@ -10,6 +10,7 @@ class FeedPayload {
     required this.quickDecide,
     this.streakHint = 0,
     this.myRatings = const {},
+    this.myReviewTexts = const {},
   });
 
   final String mealType;
@@ -17,6 +18,8 @@ class FeedPayload {
   final List<MealModel> quickDecide;
   final int streakHint;
   final Map<String, int> myRatings;
+  /// Meal id -> optional written review for the current user.
+  final Map<String, String> myReviewTexts;
 }
 
 class FeedApiService {
@@ -41,7 +44,19 @@ class FeedApiService {
     final Map<String, int> myRatings = {};
     if (ratingsRaw is Map) {
       ratingsRaw.forEach((k, v) {
-        myRatings[k.toString()] = (v as num).toInt();
+        if (v is num) {
+          myRatings[k.toString()] = v.toInt();
+        }
+      });
+    }
+
+    final reviewsRaw = response['myReviewTexts'];
+    final Map<String, String> myReviewTexts = {};
+    if (reviewsRaw is Map) {
+      reviewsRaw.forEach((k, v) {
+        if (v != null && v.toString().trim().isNotEmpty) {
+          myReviewTexts[k.toString()] = v.toString().trim();
+        }
       });
     }
 
@@ -51,6 +66,7 @@ class FeedApiService {
       quickDecide: quickDecide,
       streakHint: (response['streakHint'] as num?)?.toInt() ?? 0,
       myRatings: myRatings,
+      myReviewTexts: myReviewTexts,
     );
   }
 }

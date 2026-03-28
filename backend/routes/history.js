@@ -48,6 +48,56 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route   POST /api/history
+// @desc    Record that the user tried a meal (adds to meal history)
+// @access  Private
+router.post('/', async (req, res) => {
+  try {
+    const { mealId } = req.body;
+
+    if (!mealId) {
+      return res.status(400).json({
+        success: false,
+        message: 'mealId is required',
+      });
+    }
+
+    const meal = await Meal.findById(mealId);
+    if (!meal) {
+      return res.status(404).json({
+        success: false,
+        message: 'Meal not found',
+      });
+    }
+
+    const history = await History.create({
+      user: req.user.id,
+      meal: meal._id,
+      mealType: meal.mealType || undefined,
+    });
+
+    await history.populate('meal');
+
+    res.status(201).json({
+      success: true,
+      history: {
+        id: history._id,
+        meal: history.meal,
+        date: history.date,
+        rating: history.rating,
+        notes: history.notes,
+        createdAt: history.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error('Add history error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+});
+
 // @route   GET /api/history/stats
 // @desc    Get meal history statistics
 // @access  Private

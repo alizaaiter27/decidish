@@ -105,34 +105,43 @@ class _HomeScreenState extends State<HomeScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.fromLTRB(20, 8, 4, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    'Hi, $_userName',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textLight,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hi, $_userName',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textLight.withValues(alpha: 0.95),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Decide what to eat',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textDark,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Decide what to eat',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Meals are ranked by match points — your preferences, what you liked before, and popularity.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.35,
-                      color: AppColors.textLight,
-                    ),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.notifications_outlined),
+                    color: AppColors.primary,
+                    tooltip: 'Notifications',
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true)
+                          .pushNamed('/notifications');
+                    },
                   ),
                 ],
               ),

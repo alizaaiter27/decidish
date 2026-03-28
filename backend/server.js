@@ -27,11 +27,40 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'DeciDish API is running' });
 });
 
+// Drop legacy unique index so users can add multiple MealRating rows per meal.
+async function ensureMealRatingIndexes() {
+  const MealRating = require('./models/MealRating');
+  const coll = mongoose.connection.db.collection('mealratings');
+  try {
+    await coll.dropIndex('user_1_meal_1');
+    console.log(
+      'Removed legacy unique index mealratings.user_1_meal_1 (multiple reviews per meal enabled).'
+    );
+  } catch (e) {
+    const code = e.code;
+    const msg = (e.message || '').toLowerCase();
+    const missing =
+      code === 27 ||
+      code === 125 ||
+      msg.includes('index not found') ||
+      msg.includes('ns not found');
+    if (!missing) {
+      console.warn('mealratings dropIndex user_1_meal_1:', e.message);
+    }
+  }
+  try {
+    await MealRating.syncIndexes();
+  } catch (e) {
+    console.warn('MealRating.syncIndexes:', e.message);
+  }
+}
+
 // Database connection
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/decidish');
     console.log('MongoDB connected successfully');
+    await ensureMealRatingIndexes();
   } catch (error) {
     console.error('MongoDB connection error:', error);
     process.exit(1);

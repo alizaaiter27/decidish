@@ -1,5 +1,26 @@
 import 'package:decidish/models/meal_model.dart';
 
+/// Meal summary attached to a community/friend post.
+class FeedPostMeal {
+  FeedPostMeal({
+    required this.id,
+    this.name,
+    this.imageUrl,
+  });
+
+  final String id;
+  final String? name;
+  final String? imageUrl;
+
+  factory FeedPostMeal.fromJson(Map<String, dynamic> json) {
+    return FeedPostMeal(
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      name: json['name']?.toString(),
+      imageUrl: json['imageUrl']?.toString(),
+    );
+  }
+}
+
 class FeedPostModel {
   final String id;
   final String content;
@@ -7,6 +28,7 @@ class FeedPostModel {
   final int likesCount;
   final bool likedByMe;
   final FeedPostAuthor? user;
+  final FeedPostMeal? meal;
 
   FeedPostModel({
     required this.id,
@@ -15,9 +37,15 @@ class FeedPostModel {
     this.likesCount = 0,
     this.likedByMe = false,
     this.user,
+    this.meal,
   });
 
   factory FeedPostModel.fromJson(Map<String, dynamic> json) {
+    FeedPostMeal? meal;
+    final mealRaw = json['meal'];
+    if (mealRaw is Map) {
+      meal = FeedPostMeal.fromJson(Map<String, dynamic>.from(mealRaw));
+    }
     return FeedPostModel(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       content: json['content']?.toString() ?? '',
@@ -27,6 +55,7 @@ class FeedPostModel {
       user: json['user'] != null
           ? FeedPostAuthor.fromJson(Map<String, dynamic>.from(json['user'] as Map))
           : null,
+      meal: meal,
     );
   }
 }

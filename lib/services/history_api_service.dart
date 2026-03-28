@@ -2,6 +2,16 @@ import '../services/api_service.dart';
 import '../config/api_config.dart';
 
 class HistoryApiService {
+  /// Records that the user tried this meal (server adds a history row).
+  static Future<bool> addMealToHistory(String mealId) async {
+    final response = await ApiService.post(
+      ApiConfig.history,
+      {'mealId': mealId},
+      requireAuth: true,
+    );
+    return response['success'] == true;
+  }
+
   // Get meal history
   static Future<List<Map<String, dynamic>>> getHistory({
     int limit = 50,

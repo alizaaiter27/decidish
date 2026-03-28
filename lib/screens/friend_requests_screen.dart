@@ -109,11 +109,17 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.check, color: Colors.green),
-                          onPressed: () => _accept(req['_id'] ?? req['id']),
+                          onPressed: () {
+                            final id = req['_id'] ?? req['id'];
+                            if (id != null) _accept(id.toString());
+                          },
                         ),
                         IconButton(
                           icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () => _decline(req['_id'] ?? req['id']),
+                          onPressed: () {
+                            final id = req['_id'] ?? req['id'];
+                            if (id != null) _decline(id.toString());
+                          },
                         ),
                       ],
                     ),
