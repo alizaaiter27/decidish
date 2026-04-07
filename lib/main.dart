@@ -56,10 +56,7 @@ class DeciDishApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/':
-            return FadePageRoute(
-              page: const LoginScreen(),
-              settings: settings,
-            );
+            return FadePageRoute(page: const LoginScreen(), settings: settings);
           case '/login':
             return SlidePageRoute(
               page: const LoginScreen(),
@@ -133,10 +130,7 @@ class DeciDishApp extends StatelessWidget {
               settings: settings,
             );
           default:
-            return FadePageRoute(
-              page: const LoginScreen(),
-              settings: settings,
-            );
+            return FadePageRoute(page: const LoginScreen(), settings: settings);
         }
       },
     );

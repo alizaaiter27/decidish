@@ -47,6 +47,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# PDF build (DejaVu fonts; re-download via docs/render_supervisor_pdf.py)
+/docs/_pdf_fonts/
+
 # Backend
 /backend/node_modules/
 /backend/.env
