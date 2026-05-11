@@ -29,7 +29,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   final List<String> _preferredCuisines = [];
   final List<String> _dislikedIngredients = [];
   List<String> _cuisineAreaOptions = [];
-  String _cuisineSearch = '';
+  final TextEditingController _cuisineSearchController = TextEditingController();
+  final FocusNode _cuisineSearchFocus = FocusNode();
   bool _isLoading = true;
   bool _cuisineAreasLoading = true;
   bool _isSaving = false;
@@ -54,10 +55,23 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     'Fish',
   ];
 
+  void _onCuisineFocusChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
+    _cuisineSearchFocus.addListener(_onCuisineFocusChanged);
     _loadPreferences();
+  }
+
+  @override
+  void dispose() {
+    _cuisineSearchFocus.removeListener(_onCuisineFocusChanged);
+    _cuisineSearchFocus.dispose();
+    _cuisineSearchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPreferences() async {
@@ -183,6 +197,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         _preferredCuisines.add(c);
       }
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _cuisineSearchFocus.requestFocus();
+    });
   }
 
   void _toggleDislike(String d) {
@@ -195,69 +212,288 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     });
   }
 
-  Future<void> _showAddCustomCuisineDialog() async {
-    final controller = TextEditingController();
-    final added = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Add cuisine'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Use the exact word stored on meals (e.g. Lebanese). '
-              'TheMealDB does not list every country—Syrian, Saudi Arabian, '
-              'Egyptian, and Moroccan often cover Middle Eastern recipes.',
-              style: TextStyle(fontSize: 13, color: AppColors.textLight),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Lebanese',
-                border: OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.words,
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final t = controller.text.trim();
-              Navigator.pop(ctx, t.isEmpty ? null : t);
-            },
-            child: const Text('Add'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (added == null || added.isEmpty || !mounted) return;
-    setState(() {
-      if (!_preferredCuisines.any((x) => x.toLowerCase() == added.toLowerCase())) {
-        _preferredCuisines.add(added);
-      }
-      if (!_cuisineAreaOptions.any((x) => x.toLowerCase() == added.toLowerCase())) {
-        _cuisineAreaOptions = [..._cuisineAreaOptions, added];
-        _cuisineAreaOptions.sort(
-          (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
-        );
-      }
-    });
-  }
-
   Iterable<String> get _filteredCuisineAreas {
-    final q = _cuisineSearch.trim().toLowerCase();
+    final q = _cuisineSearchController.text.trim().toLowerCase();
     if (q.isEmpty) return _cuisineAreaOptions;
     return _cuisineAreaOptions.where(
       (a) => a.toLowerCase().contains(q),
+    );
+  }
+
+  Widget _buildCuisinePicker() {
+    if (_cuisineAreasLoading) {
+      return Container(
+        height: 120,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.textLight.withValues(alpha: 0.2),
+          ),
+        ),
+        child: const SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (_cuisineAreaOptions.isEmpty) {
+      return Text(
+        'No cuisines found in your meal library yet. Add meals with a '
+        'cuisine set, then open preferences again.',
+        style: TextStyle(
+          fontSize: 13,
+          color: AppColors.textLight,
+          height: 1.45,
+        ),
+      );
+    }
+
+    final focused = _cuisineSearchFocus.hasFocus;
+    final filtered = _filteredCuisineAreas.toList();
+    final showSuggestions = focused;
+
+    return TapRegion(
+      onTapOutside: (_) {
+        if (_cuisineSearchFocus.hasFocus) {
+          _cuisineSearchFocus.unfocus();
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: focused
+                    ? AppColors.accent.withValues(alpha: 0.9)
+                    : AppColors.textLight.withValues(alpha: 0.22),
+                width: focused ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(
+                    alpha: focused ? 0.2 : 0.12,
+                  ),
+                  blurRadius: focused ? 20 : 8,
+                  offset: Offset(0, focused ? 8 : 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Material(
+                color: Colors.transparent,
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    checkboxTheme: CheckboxThemeData(
+                      checkColor: const WidgetStatePropertyAll(AppColors.white),
+                      fillColor: WidgetStateProperty.resolveWith((s) {
+                        if (s.contains(WidgetState.selected)) {
+                          return AppColors.primary;
+                        }
+                        return null;
+                      }),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 12),
+                            child: Icon(
+                              Icons.restaurant_menu_rounded,
+                              size: 22,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _cuisineSearchController,
+                              focusNode: _cuisineSearchFocus,
+                              textInputAction: TextInputAction.search,
+                              textCapitalization: TextCapitalization.words,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textDark,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Search cuisines in your library…',
+                                hintStyle: TextStyle(
+                                  color: AppColors.textLight.withValues(
+                                    alpha: 0.85,
+                                  ),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: const EdgeInsets.fromLTRB(
+                                  10,
+                                  14,
+                                  14,
+                                  14,
+                                ),
+                              ),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                        ],
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutCubic,
+                        alignment: Alignment.topCenter,
+                        clipBehavior: Clip.hardEdge,
+                        child: showSuggestions
+                            ? Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: AppColors.textLight.withValues(
+                                      alpha: 0.16,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 232,
+                                    child: filtered.isEmpty
+                                        ? Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                              ),
+                                              child: Text(
+                                                'No cuisines match your search.',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textLight,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        : ListView.separated(
+                                            primary: false,
+                                            padding: const EdgeInsets.only(
+                                              bottom: 6,
+                                            ),
+                                            itemCount: filtered.length,
+                                            separatorBuilder: (_, __) =>
+                                                Divider(
+                                              height: 1,
+                                              thickness: 1,
+                                              indent: 12,
+                                              endIndent: 12,
+                                              color: AppColors.textLight
+                                                  .withValues(alpha: 0.12),
+                                            ),
+                                            itemBuilder: (context, i) {
+                                              final c = filtered[i];
+                                              final sel =
+                                                  _preferredCuisines.contains(c);
+                                              return CheckboxListTile(
+                                                value: sel,
+                                                onChanged: (_) =>
+                                                    _toggleCuisine(c),
+                                                title: Text(
+                                                  c,
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: sel
+                                                        ? FontWeight.w600
+                                                        : FontWeight.w500,
+                                                    color: sel
+                                                        ? AppColors.primary
+                                                        : AppColors.textDark,
+                                                  ),
+                                                ),
+                                                controlAffinity:
+                                                    ListTileControlAffinity
+                                                        .leading,
+                                                dense: true,
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_preferredCuisines.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _preferredCuisines.map((c) {
+                return InputChip(
+                  label: Text(c),
+                  onDeleted: () =>
+                      setState(() => _preferredCuisines.remove(c)),
+                  deleteIcon: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: AppColors.primary.withValues(alpha: 0.85),
+                  ),
+                  backgroundColor: AppColors.secondary.withValues(alpha: 0.65),
+                  side: BorderSide(
+                    color: AppColors.accent.withValues(alpha: 0.45),
+                  ),
+                  labelStyle: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                );
+              }).toList(),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () =>
+                    setState(() => _preferredCuisines.clear()),
+                child: Text(
+                  'Clear all',
+                  style: TextStyle(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -335,95 +571,18 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       color: AppColors.textDark,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
-                    'List is loaded from TheMealDB (official areas) plus any cuisines '
-                    'already in your app database. Leave empty to include all.',
+                    'Only cuisines that exist on meals in your library appear here. '
+                    'Leave empty to include all.',
                     style: TextStyle(
                       fontSize: 13,
-                      height: 1.4,
+                      height: 1.35,
                       color: AppColors.textLight,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search cuisines…',
-                            filled: true,
-                            fillColor: AppColors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              size: 20,
-                              color: AppColors.textLight,
-                            ),
-                          ),
-                          onChanged: (v) =>
-                              setState(() => _cuisineSearch = v),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      FilledButton.tonal(
-                        onPressed: _showAddCustomCuisineDialog,
-                        child: const Text('Custom'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (_cuisineAreasLoading)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    )
-                  else if (_cuisineAreaOptions.isEmpty)
-                    Text(
-                      'Could not load cuisine list. Use “Custom” to type a cuisine, '
-                      'or check that the API is running.',
-                      style: TextStyle(fontSize: 13, color: AppColors.textLight),
-                    )
-                  else
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _filteredCuisineAreas.map((c) {
-                        final sel = _preferredCuisines.contains(c);
-                        return FilterChip(
-                          label: Text(c),
-                          selected: sel,
-                          onSelected: (_) => _toggleCuisine(c),
-                          selectedColor:
-                              AppColors.primary.withValues(alpha: 0.25),
-                          checkmarkColor: AppColors.primary,
-                          labelStyle: TextStyle(
-                            color: sel ? AppColors.primary : AppColors.textDark,
-                            fontWeight:
-                                sel ? FontWeight.w600 : FontWeight.w500,
-                            fontSize: 13,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  if (_preferredCuisines.isNotEmpty)
-                    TextButton(
-                      onPressed: () =>
-                          setState(() => _preferredCuisines.clear()),
-                      child: const Text('Clear cuisines'),
-                    ),
+                  _buildCuisinePicker(),
                   const SizedBox(height: 28),
 
                   const Text(

@@ -202,11 +202,36 @@ class _MealLibraryScreenState extends State<MealLibraryScreen> {
                           ),
                         )
                       : _allMeals.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No meals in the library yet.',
-                                style: TextStyle(color: AppColors.textLight),
-                              ),
+                          ? LayoutBuilder(
+                              builder: (context, constraints) {
+                                return RefreshIndicator(
+                                  onRefresh: _load,
+                                  child: SingleChildScrollView(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minHeight: constraints.maxHeight,
+                                      ),
+                                      child: const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(24),
+                                          child: Text(
+                                            'No meals in the library yet.\n\n'
+                                            'Recipes live in MongoDB: run the backend import scripts '
+                                            '(import:themealdb, import:spoonacular, import:open-cookbook) '
+                                            'using the same MONGODB_URI as your API, then pull to refresh.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: AppColors.textLight,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             )
                           : visible.isEmpty
                               ? Center(

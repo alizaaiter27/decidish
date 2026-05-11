@@ -10,13 +10,16 @@
  *   node scripts/importTheMealDB.js
  *   MAX_MEALS=200 node scripts/importTheMealDB.js   # cap for testing
  *
+ * See also: `npm run import:spoonacular` and `npm run import:open-cookbook`.
+ *
  * Requires MONGODB_URI (or defaults to mongodb://localhost:27017/decidish).
  * Re-runs upsert by themealdbId (updates existing, inserts new).
  */
 
 const mongoose = require('mongoose');
 const Meal = require('../models/Meal');
-require('dotenv').config();
+const { estimateSteps } = require('./estimateSteps');
+require('./loadEnv');
 
 const BASE = 'https://www.themealdb.com/api/json/v1/1';
 
@@ -95,13 +98,6 @@ function inferCookingMethod(instructions) {
     if (t.includes(kw) && !methods.includes(label)) methods.push(label);
   }
   return methods.length ? methods : ['Baked'];
-}
-
-function estimateSteps(strInstructions) {
-  const raw = strInstructions || '';
-  const chunks = raw.split(/\r\n+/).map((s) => s.trim()).filter(Boolean);
-  const meaningful = chunks.filter((l) => l.length > 8);
-  return Math.min(24, Math.max(1, meaningful.length || 1));
 }
 
 function themealToDoc(m) {

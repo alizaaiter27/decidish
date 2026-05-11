@@ -21,50 +21,26 @@ const {
 
 const router = express.Router();
 
-const THEMEALDB_AREA_LIST = 'https://www.themealdb.com/api/json/v1/1/list.php?a=list';
-let cachedCuisineAreas = null;
-let cachedCuisineAreasAt = 0;
-const CUISINE_AREAS_CACHE_MS = 60 * 60 * 1000;
-
 // @route   GET /api/meals/cuisine-areas
-// @desc    All cuisine/area labels from TheMealDB + distinct values from your DB (for custom imports e.g. Lebanese)
+// @desc    Distinct cuisine labels that appear on at least one meal in this database
 // @access  Public
 router.get('/cuisine-areas', async (req, res) => {
   try {
-    const now = Date.now();
-    let fromApi = cachedCuisineAreas;
-    if (!fromApi || now - cachedCuisineAreasAt > CUISINE_AREAS_CACHE_MS) {
-      const r = await fetch(THEMEALDB_AREA_LIST, {
-        headers: { 'User-Agent': 'Decidish/1.0' },
-      });
-      if (!r.ok) {
-        throw new Error(`TheMealDB HTTP ${r.status}`);
-      }
-      const data = await r.json();
-      fromApi = (data.meals || [])
-        .map((m) => m.strArea)
-        .filter(Boolean);
-      cachedCuisineAreas = fromApi;
-      cachedCuisineAreasAt = now;
-    }
-
-    const fromDb = await Meal.distinct('cuisine', {
+    const raw = await Meal.distinct('cuisine', {
       cuisine: { $nin: [null, ''] },
     });
-
-    const merged = [...new Set([...fromApi, ...fromDb])].sort((a, b) =>
-      String(a).localeCompare(String(b), undefined, { sensitivity: 'base' })
+    const areas = [...new Set(raw.map((a) => String(a).trim()).filter(Boolean))].sort(
+      (a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })
     );
 
     res.json({
       success: true,
-      areas: merged,
-      fromTheMealDB: fromApi.length,
-      fromDatabase: fromDb.length,
+      areas,
+      count: areas.length,
     });
   } catch (error) {
     console.error('cuisine-areas error:', error);
-    res.status(502).json({
+    res.status(500).json({
       success: false,
       message: 'Could not load cuisine list. Try again later.',
     });

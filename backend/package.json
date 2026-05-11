@@ -8,6 +8,9 @@
     "dev": "nodemon server.js",
     "seed": "node scripts/seedMeals.js",
     "import:themealdb": "node scripts/importTheMealDB.js",
+    "import:spoonacular": "node scripts/importSpoonacular.js",
+    "import:open-cookbook": "node scripts/importOpenCookbook.js",
+    "meals:counts": "node scripts/mealCounts.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

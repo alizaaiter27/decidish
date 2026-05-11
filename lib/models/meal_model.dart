@@ -57,8 +57,9 @@ class MealModel {
   });
 
   factory MealModel.fromJson(Map<String, dynamic> json) {
+    final rawId = json['_id'] ?? json['id'];
     return MealModel(
-      id: json['_id'] ?? json['id'] ?? '',
+      id: rawId == null ? '' : rawId.toString(),
       name: json['name'] ?? '',
       description: json['description'],
       imageUrl: json['imageUrl'],
