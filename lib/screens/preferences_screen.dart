@@ -3,6 +3,16 @@ import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:flutter/material.dart';
 
+const List<String> kAllergyOptions = [
+  'Nuts',
+  'Dairy',
+  'Gluten',
+  'Shellfish',
+  'Eggs',
+  'Soy',
+  'Fish',
+];
+
 const List<String> kDislikeIngredientChips = [
   'Cilantro',
   'Mushrooms',
@@ -26,11 +36,14 @@ class PreferencesScreen extends StatefulWidget {
 class _PreferencesScreenState extends State<PreferencesScreen> {
   String? _dietType;
   final List<String> _allergies = [];
+  List<String> _allergyPickOptions = List<String>.from(kAllergyOptions);
   final List<String> _preferredCuisines = [];
   final List<String> _dislikedIngredients = [];
   List<String> _cuisineAreaOptions = [];
   final TextEditingController _cuisineSearchController = TextEditingController();
   final FocusNode _cuisineSearchFocus = FocusNode();
+  final TextEditingController _allergySearchController = TextEditingController();
+  final FocusNode _allergySearchFocus = FocusNode();
   bool _isLoading = true;
   bool _cuisineAreasLoading = true;
   bool _isSaving = false;
@@ -45,32 +58,26 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     'Gluten-Free',
   ];
 
-  final List<String> _allergyOptions = [
-    'Nuts',
-    'Dairy',
-    'Gluten',
-    'Shellfish',
-    'Eggs',
-    'Soy',
-    'Fish',
-  ];
-
-  void _onCuisineFocusChanged() {
+  void _onPickerFocusChanged() {
     if (mounted) setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
-    _cuisineSearchFocus.addListener(_onCuisineFocusChanged);
+    _cuisineSearchFocus.addListener(_onPickerFocusChanged);
+    _allergySearchFocus.addListener(_onPickerFocusChanged);
     _loadPreferences();
   }
 
   @override
   void dispose() {
-    _cuisineSearchFocus.removeListener(_onCuisineFocusChanged);
+    _cuisineSearchFocus.removeListener(_onPickerFocusChanged);
+    _allergySearchFocus.removeListener(_onPickerFocusChanged);
     _cuisineSearchFocus.dispose();
+    _allergySearchFocus.dispose();
     _cuisineSearchController.dispose();
+    _allergySearchController.dispose();
     super.dispose();
   }
 
@@ -93,6 +100,17 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         if (p['allergies'] != null) {
           _allergies.addAll(List<String>.from(p['allergies']));
         }
+        _allergyPickOptions = List<String>.from(kAllergyOptions);
+        for (final a in _allergies) {
+          if (!_allergyPickOptions.any(
+            (x) => x.toLowerCase() == a.toLowerCase(),
+          )) {
+            _allergyPickOptions = [..._allergyPickOptions, a];
+          }
+        }
+        _allergyPickOptions.sort(
+          (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
+        );
         if (p['preferredCuisines'] != null) {
           _preferredCuisines.addAll(
             List<String>.from(p['preferredCuisines']),
@@ -202,6 +220,19 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     });
   }
 
+  void _toggleAllergy(String a) {
+    setState(() {
+      if (_allergies.contains(a)) {
+        _allergies.remove(a);
+      } else {
+        _allergies.add(a);
+      }
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _allergySearchFocus.requestFocus();
+    });
+  }
+
   void _toggleDislike(String d) {
     setState(() {
       if (_dislikedIngredients.contains(d)) {
@@ -216,6 +247,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     final q = _cuisineSearchController.text.trim().toLowerCase();
     if (q.isEmpty) return _cuisineAreaOptions;
     return _cuisineAreaOptions.where(
+      (a) => a.toLowerCase().contains(q),
+    );
+  }
+
+  Iterable<String> get _filteredAllergyOptions {
+    final q = _allergySearchController.text.trim().toLowerCase();
+    if (q.isEmpty) return _allergyPickOptions;
+    return _allergyPickOptions.where(
       (a) => a.toLowerCase().contains(q),
     );
   }
@@ -497,6 +536,262 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     );
   }
 
+  Widget _buildAllergyPicker() {
+    if (_allergyPickOptions.isEmpty) {
+      return Text(
+        'No allergy options available.',
+        style: TextStyle(
+          fontSize: 13,
+          color: AppColors.textLight,
+          height: 1.45,
+        ),
+      );
+    }
+
+    final focused = _allergySearchFocus.hasFocus;
+    final filtered = _filteredAllergyOptions.toList();
+    final showSuggestions = focused;
+
+    return TapRegion(
+      onTapOutside: (_) {
+        if (_allergySearchFocus.hasFocus) {
+          _allergySearchFocus.unfocus();
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: focused
+                    ? AppColors.accent.withValues(alpha: 0.9)
+                    : AppColors.textLight.withValues(alpha: 0.22),
+                width: focused ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(
+                    alpha: focused ? 0.2 : 0.12,
+                  ),
+                  blurRadius: focused ? 20 : 8,
+                  offset: Offset(0, focused ? 8 : 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Material(
+                color: Colors.transparent,
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    checkboxTheme: CheckboxThemeData(
+                      checkColor: const WidgetStatePropertyAll(AppColors.white),
+                      fillColor: WidgetStateProperty.resolveWith((s) {
+                        if (s.contains(WidgetState.selected)) {
+                          return AppColors.primary;
+                        }
+                        return null;
+                      }),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 12),
+                            child: Icon(
+                              Icons.health_and_safety_rounded,
+                              size: 22,
+                              color: AppColors.accent,
+                            ),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _allergySearchController,
+                              focusNode: _allergySearchFocus,
+                              textInputAction: TextInputAction.search,
+                              textCapitalization: TextCapitalization.sentences,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textDark,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Search allergies…',
+                                hintStyle: TextStyle(
+                                  color: AppColors.textLight.withValues(
+                                    alpha: 0.85,
+                                  ),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: const EdgeInsets.fromLTRB(
+                                  10,
+                                  14,
+                                  14,
+                                  14,
+                                ),
+                              ),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                        ],
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutCubic,
+                        alignment: Alignment.topCenter,
+                        clipBehavior: Clip.hardEdge,
+                        child: showSuggestions
+                            ? Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: AppColors.textLight.withValues(
+                                      alpha: 0.16,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 232,
+                                    child: filtered.isEmpty
+                                        ? Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                              ),
+                                              child: Text(
+                                                'No allergies match your search.',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textLight,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        : ListView.separated(
+                                            primary: false,
+                                            padding: const EdgeInsets.only(
+                                              bottom: 6,
+                                            ),
+                                            itemCount: filtered.length,
+                                            separatorBuilder: (_, __) =>
+                                                Divider(
+                                              height: 1,
+                                              thickness: 1,
+                                              indent: 12,
+                                              endIndent: 12,
+                                              color: AppColors.textLight
+                                                  .withValues(alpha: 0.12),
+                                            ),
+                                            itemBuilder: (context, i) {
+                                              final a = filtered[i];
+                                              final sel =
+                                                  _allergies.contains(a);
+                                              return CheckboxListTile(
+                                                value: sel,
+                                                onChanged: (_) =>
+                                                    _toggleAllergy(a),
+                                                title: Text(
+                                                  a,
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: sel
+                                                        ? FontWeight.w600
+                                                        : FontWeight.w500,
+                                                    color: sel
+                                                        ? AppColors.primary
+                                                        : AppColors.textDark,
+                                                  ),
+                                                ),
+                                                controlAffinity:
+                                                    ListTileControlAffinity
+                                                        .leading,
+                                                dense: true,
+                                                visualDensity:
+                                                    VisualDensity.compact,
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                  ),
+                                ],
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_allergies.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _allergies.map((a) {
+                return InputChip(
+                  label: Text(a),
+                  onDeleted: () =>
+                      setState(() => _allergies.remove(a)),
+                  deleteIcon: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: AppColors.primary.withValues(alpha: 0.85),
+                  ),
+                  backgroundColor: AppColors.secondary.withValues(alpha: 0.65),
+                  side: BorderSide(
+                    color: AppColors.accent.withValues(alpha: 0.45),
+                  ),
+                  labelStyle: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                );
+              }).toList(),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => setState(() => _allergies.clear()),
+                child: Text(
+                  'Clear all',
+                  style: TextStyle(
+                    color: AppColors.textLight,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -593,47 +888,19 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       color: AppColors.textDark,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: _allergyOptions.map((allergy) {
-                      final isSelected = _allergies.contains(allergy);
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                            if (isSelected) {
-                              _allergies.remove(allergy);
-                            } else {
-                              _allergies.add(allergy);
-                            }
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.secondary,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            allergy,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected
-                                  ? AppColors.white
-                                  : AppColors.textDark,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Tap the field to search and select. We use this to steer '
+                    'recommendations—always confirm ingredients if you have a '
+                    'severe allergy.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.35,
+                      color: AppColors.textLight,
+                    ),
                   ),
+                  const SizedBox(height: 12),
+                  _buildAllergyPicker(),
                   const SizedBox(height: 28),
 
                   const Text(
