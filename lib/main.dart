@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:decidish/services/push_notification_service.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
@@ -44,8 +46,15 @@ class DeciDishApp extends StatelessWidget {
     );
 
     return MaterialApp(
-      title: 'DeciDish',
+      onGenerateTitle: (context) => AppStrings.of(context).appTitle,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        AppStrings.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppStrings.supportedLocales,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: colorScheme,

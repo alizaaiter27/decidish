@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:flutter/material.dart';
@@ -40,9 +41,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   final List<String> _preferredCuisines = [];
   final List<String> _dislikedIngredients = [];
   List<String> _cuisineAreaOptions = [];
-  final TextEditingController _cuisineSearchController = TextEditingController();
+  final TextEditingController _cuisineSearchController =
+      TextEditingController();
   final FocusNode _cuisineSearchFocus = FocusNode();
-  final TextEditingController _allergySearchController = TextEditingController();
+  final TextEditingController _allergySearchController =
+      TextEditingController();
   final FocusNode _allergySearchFocus = FocusNode();
   bool _isLoading = true;
   bool _cuisineAreasLoading = true;
@@ -112,9 +115,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
         );
         if (p['preferredCuisines'] != null) {
-          _preferredCuisines.addAll(
-            List<String>.from(p['preferredCuisines']),
-          );
+          _preferredCuisines.addAll(List<String>.from(p['preferredCuisines']));
         }
         if (p['dislikedIngredients'] != null) {
           _dislikedIngredients.addAll(
@@ -152,6 +153,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final strings = AppStrings.of(context);
         setState(() {
           _isLoading = false;
           _cuisineAreasLoading = false;
@@ -159,7 +161,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error loading preferences: ${e.toString().replaceAll('ApiException: ', '')}',
+              strings.errorLoadingPreferences(
+                e.toString().replaceAll('ApiException: ', ''),
+              ),
             ),
             backgroundColor: Colors.red,
           ),
@@ -184,9 +188,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       );
 
       if (mounted) {
+        final strings = AppStrings.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Preferences saved successfully'),
+          SnackBar(
+            content: Text(strings.preferencesSaved),
             backgroundColor: Colors.green,
           ),
         );
@@ -194,11 +199,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final strings = AppStrings.of(context);
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error saving preferences: ${e.toString().replaceAll('ApiException: ', '')}',
+              strings.errorSavingPreferences(
+                e.toString().replaceAll('ApiException: ', ''),
+              ),
             ),
             backgroundColor: Colors.red,
           ),
@@ -246,20 +254,17 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   Iterable<String> get _filteredCuisineAreas {
     final q = _cuisineSearchController.text.trim().toLowerCase();
     if (q.isEmpty) return _cuisineAreaOptions;
-    return _cuisineAreaOptions.where(
-      (a) => a.toLowerCase().contains(q),
-    );
+    return _cuisineAreaOptions.where((a) => a.toLowerCase().contains(q));
   }
 
   Iterable<String> get _filteredAllergyOptions {
     final q = _allergySearchController.text.trim().toLowerCase();
     if (q.isEmpty) return _allergyPickOptions;
-    return _allergyPickOptions.where(
-      (a) => a.toLowerCase().contains(q),
-    );
+    return _allergyPickOptions.where((a) => a.toLowerCase().contains(q));
   }
 
   Widget _buildCuisinePicker() {
+    final strings = AppStrings.of(context);
     if (_cuisineAreasLoading) {
       return Container(
         height: 120,
@@ -267,9 +272,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.textLight.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: AppColors.textLight.withValues(alpha: 0.2)),
         ),
         child: const SizedBox(
           width: 28,
@@ -281,8 +284,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
     if (_cuisineAreaOptions.isEmpty) {
       return Text(
-        'No cuisines found in your meal library yet. Add meals with a '
-        'cuisine set, then open preferences again.',
+        strings.noCuisinesFound,
         style: TextStyle(
           fontSize: 13,
           color: AppColors.textLight,
@@ -368,7 +370,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                 color: AppColors.textDark,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'Search cuisines in your library…',
+                                hintText: strings.cuisineSearchHint,
                                 hintStyle: TextStyle(
                                   color: AppColors.textLight.withValues(
                                     alpha: 0.85,
@@ -413,10 +415,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                horizontal: 16,
-                                              ),
+                                                    horizontal: 16,
+                                                  ),
                                               child: Text(
-                                                'No cuisines match your search.',
+                                                strings.noCuisinesMatch,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontSize: 14,
@@ -433,17 +435,17 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                             itemCount: filtered.length,
                                             separatorBuilder: (_, __) =>
                                                 Divider(
-                                              height: 1,
-                                              thickness: 1,
-                                              indent: 12,
-                                              endIndent: 12,
-                                              color: AppColors.textLight
-                                                  .withValues(alpha: 0.12),
-                                            ),
+                                                  height: 1,
+                                                  thickness: 1,
+                                                  indent: 12,
+                                                  endIndent: 12,
+                                                  color: AppColors.textLight
+                                                      .withValues(alpha: 0.12),
+                                                ),
                                             itemBuilder: (context, i) {
                                               final c = filtered[i];
-                                              final sel =
-                                                  _preferredCuisines.contains(c);
+                                              final sel = _preferredCuisines
+                                                  .contains(c);
                                               return CheckboxListTile(
                                                 value: sel,
                                                 onChanged: (_) =>
@@ -468,8 +470,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                                     VisualDensity.compact,
                                                 contentPadding:
                                                     const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                ),
+                                                      horizontal: 8,
+                                                    ),
                                               );
                                             },
                                           ),
@@ -492,8 +494,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               children: _preferredCuisines.map((c) {
                 return InputChip(
                   label: Text(c),
-                  onDeleted: () =>
-                      setState(() => _preferredCuisines.remove(c)),
+                  onDeleted: () => setState(() => _preferredCuisines.remove(c)),
                   deleteIcon: Icon(
                     Icons.close_rounded,
                     size: 18,
@@ -518,10 +519,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () =>
-                    setState(() => _preferredCuisines.clear()),
+                onPressed: () => setState(() => _preferredCuisines.clear()),
                 child: Text(
-                  'Clear all',
+                  strings.clearAll,
                   style: TextStyle(
                     color: AppColors.textLight,
                     fontWeight: FontWeight.w500,
@@ -537,9 +537,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   }
 
   Widget _buildAllergyPicker() {
+    final strings = AppStrings.of(context);
     if (_allergyPickOptions.isEmpty) {
       return Text(
-        'No allergy options available.',
+        strings.noAllergyOptions,
         style: TextStyle(
           fontSize: 13,
           color: AppColors.textLight,
@@ -625,7 +626,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                 color: AppColors.textDark,
                               ),
                               decoration: InputDecoration(
-                                hintText: 'Search allergies…',
+                                hintText: strings.allergySearchHint,
                                 hintStyle: TextStyle(
                                   color: AppColors.textLight.withValues(
                                     alpha: 0.85,
@@ -670,10 +671,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                horizontal: 16,
-                                              ),
+                                                    horizontal: 16,
+                                                  ),
                                               child: Text(
-                                                'No allergies match your search.',
+                                                strings.noAllergiesMatch,
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontSize: 14,
@@ -690,17 +691,18 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                             itemCount: filtered.length,
                                             separatorBuilder: (_, __) =>
                                                 Divider(
-                                              height: 1,
-                                              thickness: 1,
-                                              indent: 12,
-                                              endIndent: 12,
-                                              color: AppColors.textLight
-                                                  .withValues(alpha: 0.12),
-                                            ),
+                                                  height: 1,
+                                                  thickness: 1,
+                                                  indent: 12,
+                                                  endIndent: 12,
+                                                  color: AppColors.textLight
+                                                      .withValues(alpha: 0.12),
+                                                ),
                                             itemBuilder: (context, i) {
                                               final a = filtered[i];
-                                              final sel =
-                                                  _allergies.contains(a);
+                                              final sel = _allergies.contains(
+                                                a,
+                                              );
                                               return CheckboxListTile(
                                                 value: sel,
                                                 onChanged: (_) =>
@@ -725,8 +727,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                                     VisualDensity.compact,
                                                 contentPadding:
                                                     const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                ),
+                                                      horizontal: 8,
+                                                    ),
                                               );
                                             },
                                           ),
@@ -749,8 +751,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               children: _allergies.map((a) {
                 return InputChip(
                   label: Text(a),
-                  onDeleted: () =>
-                      setState(() => _allergies.remove(a)),
+                  onDeleted: () => setState(() => _allergies.remove(a)),
                   deleteIcon: Icon(
                     Icons.close_rounded,
                     size: 18,
@@ -777,7 +778,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               child: TextButton(
                 onPressed: () => setState(() => _allergies.clear()),
                 child: Text(
-                  'Clear all',
+                  strings.clearAll,
                   style: TextStyle(
                     color: AppColors.textLight,
                     fontWeight: FontWeight.w500,
@@ -794,12 +795,13 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
-        title: const Text('Preferences'),
+        title: Text(strings.preferences),
         elevation: 0,
       ),
       body: _isLoading
@@ -809,8 +811,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Diet type',
+                  Text(
+                    strings.dietType,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -858,8 +860,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   ),
                   const SizedBox(height: 28),
 
-                  const Text(
-                    'Preferred cuisines',
+                  Text(
+                    strings.preferredCuisines,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -868,8 +870,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Only cuisines that exist on meals in your library appear here. '
-                    'Leave empty to include all.',
+                    strings.preferredCuisineHelp,
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.35,
@@ -880,8 +881,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   _buildCuisinePicker(),
                   const SizedBox(height: 28),
 
-                  const Text(
-                    'Allergies',
+                  Text(
+                    strings.allergies,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -890,9 +891,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Tap the field to search and select. We use this to steer '
-                    'recommendations—always confirm ingredients if you have a '
-                    'severe allergy.',
+                    strings.allergyHelp,
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.35,
@@ -903,8 +902,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   _buildAllergyPicker(),
                   const SizedBox(height: 28),
 
-                  const Text(
-                    'Ingredients to avoid',
+                  Text(
+                    strings.ingredientsToAvoid,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -913,11 +912,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'We try to avoid recipes that highlight these ingredients.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textLight,
-                    ),
+                    strings.ingredientsToAvoidHelp,
+                    style: TextStyle(fontSize: 13, color: AppColors.textLight),
                   ),
                   const SizedBox(height: 12),
                   Wrap(
@@ -964,8 +960,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                 ),
                               ),
                             )
-                          : const Text(
-                              'Save preferences',
+                          : Text(
+                              strings.savePreferences,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
