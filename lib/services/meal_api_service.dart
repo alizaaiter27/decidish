@@ -4,7 +4,7 @@ import '../services/api_service.dart';
 import '../config/api_config.dart';
 
 class MealApiService {
-  /// TheMealDB area list merged with distinct `cuisine` values in your database.
+  /// Distinct `cuisine` values that appear on at least one meal in your library.
   static Future<List<String>> getCuisineAreas() async {
     final response = await ApiService.get(
       '${ApiConfig.meals}/cuisine-areas',

@@ -143,6 +143,20 @@ const mealSchema = new mongoose.Schema({
     sparse: true,
     unique: true,
   },
+  /** Set by `scripts/importSpoonacular.js` */
+  spoonacularId: {
+    type: String,
+    trim: true,
+    sparse: true,
+    unique: true,
+  },
+  /** Canonical recipe URL from open cookbook JSON (schema.org `url`) — `scripts/importOpenCookbook.js` */
+  openCookbookUrl: {
+    type: String,
+    trim: true,
+    sparse: true,
+    unique: true,
+  },
 }, {
   timestamps: true,
 });

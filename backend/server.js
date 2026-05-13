@@ -22,9 +22,36 @@ app.use('/api/messages', require('./routes/messages'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/feed', require('./routes/feed'));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'DeciDish API is running' });
+// Health check endpoint (append ?meals=1 to see meal row counts by import source)
+app.get('/api/health', async (req, res) => {
+  try {
+    const payload = { status: 'OK', message: 'DeciDish API is running' };
+    if (req.query.meals === '1') {
+      if (mongoose.connection.readyState === 1) {
+        const Meal = require('./models/Meal');
+        const hasId = (field) => ({
+          [field]: { $exists: true, $nin: [null, ''] },
+        });
+        const [total, themealdb, spoonacular, openCookbook] = await Promise.all([
+          Meal.countDocuments(),
+          Meal.countDocuments(hasId('themealdbId')),
+          Meal.countDocuments(hasId('spoonacularId')),
+          Meal.countDocuments(hasId('openCookbookUrl')),
+        ]);
+        payload.mealCounts = {
+          total,
+          themealdb,
+          spoonacular,
+          openCookbook,
+        };
+      } else {
+        payload.mealCounts = { error: 'MongoDB not connected' };
+      }
+    }
+    res.json(payload);
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
 });
 
 // Drop legacy unique index so users can add multiple MealRating rows per meal.

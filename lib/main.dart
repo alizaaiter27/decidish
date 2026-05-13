@@ -21,6 +21,8 @@ import 'screens/history_screen.dart';
 import 'utils/app_colors.dart';
 import 'utils/page_transitions.dart';
 
+//comment trial to add to github
+
 //hello world =
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
