@@ -1,5 +1,6 @@
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:decidish/services/auth_api_service.dart';
 import 'package:decidish/services/api_service.dart' show ApiException;
@@ -128,6 +129,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             _buildHeader(),
                             const SizedBox(height: 20),
+                            ValueListenableBuilder<Locale?>(
+                              valueListenable: LocaleController.localeNotifier,
+                              builder: (context, saved, _) {
+                                return _buildSettingItem(
+                                  context,
+                                  Icons.language,
+                                  strings.language,
+                                  _languageChoiceSubtitle(strings, saved),
+                                  () => _showLanguagePicker(context),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
 
                             // Settings List
                             _buildSettingItem(
@@ -344,6 +358,128 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
         ],
       ),
+    );
+  }
+
+  String _languageChoiceSubtitle(AppStrings strings, Locale? saved) {
+    if (saved == null) return strings.systemDefault;
+    switch (saved.languageCode) {
+      case 'tr':
+        return strings.turkish;
+      case 'en':
+        return strings.english;
+      default:
+        return saved.languageCode;
+    }
+  }
+
+  Future<void> _showLanguagePicker(BuildContext context) async {
+    final strings = AppStrings.of(context);
+    final current = LocaleController.localeNotifier.value;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        Widget optionTile({
+          required String label,
+          required bool selected,
+          required VoidCallback onPick,
+        }) {
+          return ListTile(
+            leading: Icon(
+              selected ? Icons.check_circle : Icons.circle_outlined,
+              color: selected ? AppColors.primary : AppColors.textLight,
+            ),
+            title: Text(
+              label,
+              style: TextStyle(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: AppColors.textDark,
+              ),
+            ),
+            onTap: onPick,
+          );
+        }
+
+        final systemSelected = current == null;
+        final enSelected = current?.languageCode == 'en';
+        final trSelected = current?.languageCode == 'tr';
+
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: MediaQuery.paddingOf(sheetContext).bottom + 16,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 12, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          strings.language,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        icon: const Icon(Icons.close),
+                        color: AppColors.textLight,
+                      ),
+                    ],
+                  ),
+                ),
+                optionTile(
+                  label: strings.systemDefault,
+                  selected: systemSelected,
+                  onPick: () async {
+                    await LocaleController.setLocale(null);
+                    if (sheetContext.mounted) Navigator.pop(sheetContext);
+                  },
+                ),
+                optionTile(
+                  label: strings.english,
+                  selected: enSelected,
+                  onPick: () async {
+                    await LocaleController.setLocale(const Locale('en'));
+                    if (sheetContext.mounted) Navigator.pop(sheetContext);
+                  },
+                ),
+                optionTile(
+                  label: strings.turkish,
+                  selected: trSelected,
+                  onPick: () async {
+                    await LocaleController.setLocale(const Locale('tr'));
+                    if (sheetContext.mounted) Navigator.pop(sheetContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

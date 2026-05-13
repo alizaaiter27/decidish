@@ -1,6 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/l10n/app_strings.dart';
-import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:flutter/material.dart';
@@ -901,57 +900,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildAllergyPicker(),
-                  const SizedBox(height: 28),
-                  Text(
-                    strings.language,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue:
-                        LocaleController.localeNotifier.value?.languageCode ??
-                        'system',
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(color: AppColors.secondary),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(
-                          color: AppColors.secondary.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ),
-                    items: [
-                      DropdownMenuItem(
-                        value: 'system',
-                        child: Text(strings.systemDefault),
-                      ),
-                      DropdownMenuItem(
-                        value: 'en',
-                        child: Text(strings.english),
-                      ),
-                      DropdownMenuItem(
-                        value: 'tr',
-                        child: Text(strings.turkish),
-                      ),
-                    ],
-                    onChanged: (value) async {
-                      if (value == null) return;
-                      if (value == 'system') {
-                        await LocaleController.setLocale(null);
-                        return;
-                      }
-                      await LocaleController.setLocale(Locale(value));
-                    },
-                  ),
                   const SizedBox(height: 28),
 
                   Text(
