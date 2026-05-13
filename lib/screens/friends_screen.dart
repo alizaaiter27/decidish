@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:decidish/services/api_service.dart';
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/services/friend_service.dart';
+import 'package:decidish/l10n/app_strings.dart';
 
 class FriendsScreen extends StatefulWidget {
   const FriendsScreen({super.key});
@@ -138,7 +139,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
     if (userId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not read user id')),
+        SnackBar(content: Text(AppStrings.of(context).couldNotReadUserId)),
       );
       return;
     }
@@ -146,7 +147,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
       await FriendService.sendRequest(userId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Friend request sent')),
+        SnackBar(content: Text(AppStrings.of(context).friendRequestSent)),
       );
       setState(() {
         _searchResults = _searchResults.where((u) {
@@ -158,17 +159,15 @@ class _FriendsScreenState extends State<FriendsScreen> {
       final msg = e is ApiException
           ? e.message
           : e.toString().replaceAll('ApiException: ', '');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 
   void _openChat(String friendId, String friendName) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      '/chat',
-      arguments: {'userId': friendId, 'name': friendName},
-    );
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).pushNamed('/chat', arguments: {'userId': friendId, 'name': friendName});
   }
 
   void _openPosts(String friendId, String friendName) {
@@ -182,16 +181,16 @@ class _FriendsScreenState extends State<FriendsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Remove friend'),
-        content: Text('Remove $name from your friends?'),
+        title: Text(AppStrings.of(context).removeFriend),
+        content: Text(AppStrings.of(context).removeFriendPrompt(name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.of(context).cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Remove'),
+            child: Text(AppStrings.of(context).remove),
           ),
         ],
       ),
@@ -202,42 +201,42 @@ class _FriendsScreenState extends State<FriendsScreen> {
       await _refreshAll();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Friend removed')),
+        SnackBar(content: Text(AppStrings.of(context).friendRemoved)),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text(AppStrings.of(context).genericError('$e'))),
       );
     }
   }
 
-  bool get _showSearchPanel =>
-      _searchController.text.trim().length >= 2;
+  bool get _showSearchPanel => _searchController.text.trim().length >= 2;
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Friends'),
+        title: Text(strings.friends),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textDark,
         elevation: 0,
         actions: [
           IconButton(
-            tooltip: 'Friend requests',
+            tooltip: strings.friendRequestsTooltip,
             onPressed: () async {
-              await Navigator.of(context, rootNavigator: true)
-                  .pushNamed('/friend_requests');
+              await Navigator.of(
+                context,
+                rootNavigator: true,
+              ).pushNamed('/friend_requests');
               await _loadPendingRequestCount();
             },
             icon: Badge(
               isLabelVisible: _pendingRequestCount > 0,
               label: Text(
-                _pendingRequestCount > 9
-                    ? '9+'
-                    : '$_pendingRequestCount',
+                _pendingRequestCount > 9 ? '9+' : '$_pendingRequestCount',
               ),
               child: const Icon(Icons.notifications_outlined),
             ),
@@ -261,7 +260,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: _loadFriends,
-                      child: const Text('Retry'),
+                      child: Text(strings.retry),
                     ),
                   ],
                 ),
@@ -283,7 +282,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                             onChanged: _onSearchTextChanged,
                             textInputAction: TextInputAction.search,
                             decoration: InputDecoration(
-                              hintText: 'Search by name or email',
+                              hintText: strings.searchByNameOrEmail,
                               prefixIcon: const Icon(Icons.search_rounded),
                               filled: true,
                               fillColor: AppColors.white,
@@ -317,7 +316,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Type at least 2 characters. People already in your list are hidden.',
+                            strings.typeAtLeast2CharsHelp,
                             style: TextStyle(
                               fontSize: 12,
                               color: AppColors.textLight,
@@ -330,8 +329,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
                               borderRadius: BorderRadius.circular(12),
                               child: InkWell(
                                 onTap: () async {
-                                  await Navigator.of(context, rootNavigator: true)
-                                      .pushNamed('/friend_requests');
+                                  await Navigator.of(
+                                    context,
+                                    rootNavigator: true,
+                                  ).pushNamed('/friend_requests');
                                   await _loadPendingRequestCount();
                                 },
                                 borderRadius: BorderRadius.circular(12),
@@ -349,9 +350,9 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
-                                          _pendingRequestCount == 1
-                                              ? '1 person wants to connect'
-                                              : '$_pendingRequestCount people want to connect',
+                                          strings.personWantsToConnect(
+                                            _pendingRequestCount,
+                                          ),
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w600,
                                             color: AppColors.textDark,
@@ -397,51 +398,45 @@ class _FriendsScreenState extends State<FriendsScreen> {
                           padding: const EdgeInsets.all(24),
                           child: Text(
                             _friendIds.isEmpty
-                                ? 'No new people match that search.'
-                                : 'No new people match (everyone listed may already be your friend).',
+                                ? strings.noNewPeopleMatch
+                                : strings.noNewPeopleMatchFriends,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: AppColors.textLight,
-                            ),
+                            style: const TextStyle(color: AppColors.textLight),
                           ),
                         ),
                       )
                     else
                       SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final u = _searchResults[index];
-                            final name = u is Map
-                                ? (u['name']?.toString() ?? 'Unknown')
-                                : 'Unknown';
-                            final email = u is Map
-                                ? (u['email']?.toString() ?? '')
-                                : '';
-                            return Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                              child: Card(
-                                child: ListTile(
-                                  title: Text(name),
-                                  subtitle: email.isNotEmpty
-                                      ? Text(email)
-                                      : null,
-                                  trailing: FilledButton.tonal(
-                                    onPressed: () => _sendRequest(u),
-                                    child: const Text('Add'),
-                                  ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final u = _searchResults[index];
+                          final name = u is Map
+                              ? (u['name']?.toString() ??
+                                    strings.unknownUserName())
+                              : strings.unknownUserName();
+                          final email = u is Map
+                              ? (u['email']?.toString() ?? '')
+                              : '';
+                          return Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            child: Card(
+                              child: ListTile(
+                                title: Text(name),
+                                subtitle: email.isNotEmpty ? Text(email) : null,
+                                trailing: FilledButton.tonal(
+                                  onPressed: () => _sendRequest(u),
+                                  child: Text(strings.add),
                                 ),
                               ),
-                            );
-                          },
-                          childCount: _searchResults.length,
-                        ),
+                            ),
+                          );
+                        }, childCount: _searchResults.length),
                       ),
                     const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                    const SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'Your friends',
+                          strings.yourFriends,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -465,8 +460,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
                               color: AppColors.textLight.withValues(alpha: 0.6),
                             ),
                             const SizedBox(height: 16),
-                            const Text(
-                              'No friends yet',
+                            Text(
+                              strings.noFriendsYet,
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -475,7 +470,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Search above to find people by name or email and tap Add.',
+                              strings.searchAndAddFriendsHelp,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 14,
@@ -487,11 +482,11 @@ class _FriendsScreenState extends State<FriendsScreen> {
                       ),
                     )
                   else if (_friends.isEmpty)
-                    const SliverToBoxAdapter(
+                    SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(16, 0, 16, 32),
                         child: Text(
-                          'No friends yet — add someone from the search results above.',
+                          strings.noFriendsAddFromSearch,
                           style: TextStyle(
                             fontSize: 14,
                             color: AppColors.textLight,
@@ -508,67 +503,62 @@ class _FriendsScreenState extends State<FriendsScreen> {
                         120,
                       ),
                       sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final f = _friends[index];
-                            final name = f is Map
-                                ? (f['name']?.toString() ?? 'Unknown')
-                                : 'Unknown';
-                            final email = f is Map
-                                ? (f['email']?.toString() ?? '')
-                                : '';
-                            final id = FriendService.friendIdFromMap(f);
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Card(
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 4,
-                                  ),
-                                  title: Text(name),
-                                  subtitle:
-                                      email.isNotEmpty ? Text(email) : null,
-                                  onTap: id.isEmpty
-                                      ? null
-                                      : () => _openPosts(id, name),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.article_outlined,
-                                        ),
-                                        tooltip: 'Posts',
-                                        onPressed: id.isEmpty
-                                            ? null
-                                            : () => _openPosts(id, name),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final f = _friends[index];
+                          final name = f is Map
+                              ? (f['name']?.toString() ??
+                                    strings.unknownUserName())
+                              : strings.unknownUserName();
+                          final email = f is Map
+                              ? (f['email']?.toString() ?? '')
+                              : '';
+                          final id = FriendService.friendIdFromMap(f);
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Card(
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                title: Text(name),
+                                subtitle: email.isNotEmpty ? Text(email) : null,
+                                onTap: id.isEmpty
+                                    ? null
+                                    : () => _openPosts(id, name),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.article_outlined),
+                                      tooltip: strings.posts,
+                                      onPressed: id.isEmpty
+                                          ? null
+                                          : () => _openPosts(id, name),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.message_outlined),
+                                      tooltip: strings.message,
+                                      onPressed: id.isEmpty
+                                          ? null
+                                          : () => _openChat(id, name),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.person_remove_outlined,
+                                        color: Colors.red,
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.message_outlined),
-                                        tooltip: 'Message',
-                                        onPressed: id.isEmpty
-                                            ? null
-                                            : () => _openChat(id, name),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.person_remove_outlined,
-                                          color: Colors.red,
-                                        ),
-                                        tooltip: 'Remove',
-                                        onPressed: id.isEmpty
-                                            ? null
-                                            : () => _confirmRemove(id, name),
-                                      ),
-                                    ],
-                                  ),
+                                      tooltip: strings.remove,
+                                      onPressed: id.isEmpty
+                                          ? null
+                                          : () => _confirmRemove(id, name),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
-                          childCount: _friends.length,
-                        ),
+                            ),
+                          );
+                        }, childCount: _friends.length),
                       ),
                     ),
                 ],

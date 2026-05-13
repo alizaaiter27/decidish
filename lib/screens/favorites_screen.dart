@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart' show AppColors;
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/favorites_api_service.dart';
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
@@ -56,8 +57,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           _favorites.removeWhere((meal) => meal.id == mealId);
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Removed from favorites'),
+          SnackBar(
+            content: Text(AppStrings.of(context).removedFromFavorites),
             backgroundColor: Colors.green,
             duration: Duration(milliseconds: 500),
           ),
@@ -68,7 +69,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error: ${e.toString().replaceAll('ApiException: ', '')}',
+              AppStrings.of(
+                context,
+              ).genericError(e.toString().replaceAll('ApiException: ', '')),
             ),
             backgroundColor: Colors.red,
           ),
@@ -79,6 +82,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -89,8 +93,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Text(
-                    'Favorites',
+                  Text(
+                    strings.favorites,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -129,7 +133,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             const SizedBox(height: 20),
                             ElevatedButton(
                               onPressed: _loadFavorites,
-                              child: const Text('Retry'),
+                              child: Text(strings.retry),
                             ),
                           ],
                         ),
@@ -149,7 +153,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'No favorites yet',
+                              strings.noFavoritesYet,
                               style: TextStyle(
                                 fontSize: 18,
                                 color: AppColors.textLight,

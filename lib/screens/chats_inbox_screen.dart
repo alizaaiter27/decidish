@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/services/api_service.dart';
 import 'package:decidish/services/friend_service.dart';
+import 'package:decidish/l10n/app_strings.dart';
 
 /// Main-tab inbox: list friends and open a 1:1 [ChatScreen] per friend.
 class ChatsInboxScreen extends StatefulWidget {
@@ -48,21 +49,22 @@ class _ChatsInboxScreenState extends State<ChatsInboxScreen> {
   }
 
   void _openChat(String friendId, String friendName) {
-    Navigator.of(context, rootNavigator: true).pushNamed(
-      '/chat',
-      arguments: {'userId': friendId, 'name': friendName},
-    );
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).pushNamed('/chat', arguments: {'userId': friendId, 'name': friendName});
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text(
-          'Chats',
+        title: Text(
+          strings.navChats,
           style: TextStyle(
             color: AppColors.textDark,
             fontWeight: FontWeight.bold,
@@ -71,7 +73,7 @@ class _ChatsInboxScreenState extends State<ChatsInboxScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.group_outlined, color: AppColors.textDark),
-            tooltip: 'Friends',
+            tooltip: strings.friends,
             onPressed: () {
               Navigator.of(context, rootNavigator: true).pushNamed('/friends');
             },
@@ -95,7 +97,7 @@ class _ChatsInboxScreenState extends State<ChatsInboxScreen> {
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: _loadFriends,
-                      child: const Text('Retry'),
+                      child: Text(strings.retry),
                     ),
                   ],
                 ),
@@ -116,8 +118,8 @@ class _ChatsInboxScreenState extends State<ChatsInboxScreen> {
                           color: AppColors.textLight.withValues(alpha: 0.6),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No conversations yet',
+                        Text(
+                          strings.noConversationsYet,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 18,
@@ -129,7 +131,7 @@ class _ChatsInboxScreenState extends State<ChatsInboxScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 32),
                           child: Text(
-                            'Add friends from the Friends screen, then open a chat from here.',
+                            strings.addFriendsToStartChat,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 14,
@@ -147,7 +149,7 @@ class _ChatsInboxScreenState extends State<ChatsInboxScreen> {
                               ).pushNamed('/friends');
                             },
                             icon: const Icon(Icons.person_add_outlined),
-                            label: const Text('Find friends'),
+                            label: Text(strings.findFriends),
                           ),
                         ),
                       ],
@@ -161,8 +163,8 @@ class _ChatsInboxScreenState extends State<ChatsInboxScreen> {
                         final name = f is Map
                             ? (f['name']?.toString().trim().isNotEmpty == true
                                   ? f['name'].toString()
-                                  : 'Member')
-                            : 'Member';
+                                  : strings.member)
+                            : strings.member;
                         final email = f is Map
                             ? (f['email']?.toString() ?? '')
                             : '';

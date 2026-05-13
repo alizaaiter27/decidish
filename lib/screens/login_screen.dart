@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/widgets/app_logo.dart';
 import 'package:decidish/services/auth_api_service.dart';
 import 'package:flutter/material.dart';
@@ -86,17 +87,19 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   String? _validateEmail(String? value) {
+    final strings = AppStrings.of(context);
     final v = (value ?? '').trim();
-    if (v.isEmpty) return 'Email is required';
+    if (v.isEmpty) return strings.emailRequired;
     final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    if (!emailRegex.hasMatch(v)) return 'Enter a valid email';
+    if (!emailRegex.hasMatch(v)) return strings.enterValidEmail;
     return null;
   }
 
   String? _validatePassword(String? value) {
+    final strings = AppStrings.of(context);
     final v = value ?? '';
-    if (v.isEmpty) return 'Password is required';
-    if (v.length < 6) return 'Password must be at least 6 characters';
+    if (v.isEmpty) return strings.passwordRequired;
+    if (v.length < 6) return strings.passwordMinLength;
     return null;
   }
 
@@ -118,14 +121,13 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() => _isLoading = false);
 
       if (response['success'] == true) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/home',
-          (route) => false,
-        );
-      } else {
-        ScaffoldMessenger.of(
+        Navigator.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Login failed')));
+        ).pushNamedAndRemoveUntil('/home', (route) => false);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.of(context).loginFailed)),
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -152,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -201,8 +204,8 @@ class _LoginScreenState extends State<LoginScreen>
                             key: _formKey,
                             child: Column(
                               children: [
-                                const Text(
-                                  'Login',
+                                Text(
+                                  strings.login,
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
@@ -219,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       AutovalidateMode.onUserInteraction,
                                   validator: _validateEmail,
                                   decoration: InputDecoration(
-                                    hintText: 'Enter your email',
+                                    hintText: strings.enterYourEmail,
                                     filled: true,
                                     fillColor: AppColors.white.withValues(
                                       alpha: 0.5,
@@ -254,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       AutovalidateMode.onUserInteraction,
                                   validator: _validatePassword,
                                   decoration: InputDecoration(
-                                    hintText: 'Enter your password',
+                                    hintText: strings.enterYourPassword,
                                     filled: true,
                                     fillColor: AppColors.white.withValues(
                                       alpha: 0.5,
@@ -303,8 +306,8 @@ class _LoginScreenState extends State<LoginScreen>
                                   alignment: Alignment.centerRight,
                                   child: TextButton(
                                     onPressed: () {},
-                                    child: const Text(
-                                      'Forgot Password?',
+                                    child: Text(
+                                      strings.forgotPassword,
                                       style: TextStyle(
                                         color: AppColors.accent,
                                         fontSize: 12,
@@ -336,8 +339,8 @@ class _LoginScreenState extends State<LoginScreen>
                                                     BorderRadius.circular(30),
                                               ),
                                             ),
-                                            child: const Text(
-                                              'login',
+                                            child: Text(
+                                              strings.loginLower,
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w600,
@@ -352,21 +355,18 @@ class _LoginScreenState extends State<LoginScreen>
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Text(
-                                      "Don't have an account? ",
+                                    Text(
+                                      strings.dontHaveAccount,
                                       style: TextStyle(
                                         color: AppColors.textLight,
                                       ),
                                     ),
                                     GestureDetector(
                                       onTap: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/signup',
-                                        );
+                                        Navigator.pushNamed(context, '/signup');
                                       },
-                                      child: const Text(
-                                        'Sign up',
+                                      child: Text(
+                                        strings.signup,
                                         style: TextStyle(
                                           color: AppColors.primary,
                                           fontWeight: FontWeight.bold,

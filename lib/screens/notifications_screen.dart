@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:flutter/material.dart';
 
 /// Placeholder hub for notification-related info; push settings live in system / OS.
@@ -7,10 +8,11 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(strings.notifications),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textDark,
         elevation: 0,
@@ -36,8 +38,8 @@ class NotificationsScreen extends StatelessWidget {
                       size: 22,
                     ),
                     const SizedBox(width: 10),
-                    const Text(
-                      'Push notifications',
+                    Text(
+                      strings.pushNotifications,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -48,7 +50,7 @@ class NotificationsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'DeciDish uses push for meal ideas, friend activity, and reminders when you allow them in iOS Settings → DeciDish → Notifications.',
+                  strings.pushNotificationsBody,
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.4,
@@ -60,7 +62,7 @@ class NotificationsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'More notification preferences (quiet hours, categories) can be added here later.',
+            strings.notificationsMorePrefs,
             style: TextStyle(
               fontSize: 13,
               color: AppColors.textLight.withValues(alpha: 0.9),

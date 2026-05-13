@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:decidish/services/api_service.dart';
 import 'package:decidish/services/auth_service.dart';
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/models/meal_review_model.dart';
 import 'package:decidish/services/favorites_api_service.dart';
@@ -93,19 +94,17 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete review?'),
-        content: const Text(
-          'This removes your rating and written review for this entry.',
-        ),
+        title: Text(AppStrings.of(context).deleteReviewQuestion),
+        content: Text(AppStrings.of(context).deleteReviewHelp),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.of(context).cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
+            child: Text(AppStrings.of(context).delete),
           ),
         ],
       ),
@@ -125,17 +124,17 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       await MealApiService.deleteMealRating(meal.id, rid);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Review deleted')),
+        SnackBar(content: Text(AppStrings.of(context).reviewDeleted)),
       );
       await _loadReviewsForCurrentMeal();
     } catch (e) {
       if (mounted) {
         final msg = e is ApiException
             ? e.message
-            : 'Could not delete review';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+            : AppStrings.of(context).couldNotDeleteReview;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
       }
     } finally {
       if (mounted) setState(() => _deletingRatingId = null);
@@ -206,17 +205,17 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Review saved')),
+        SnackBar(content: Text(AppStrings.of(context).reviewSaved)),
       );
       await _loadReviewsForCurrentMeal();
     } catch (e) {
       if (mounted) {
         final msg = e is ApiException
             ? e.message
-            : 'Could not save review';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+            : AppStrings.of(context).couldNotSaveReview;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
       }
     } finally {
       if (mounted) setState(() => _reviewSaving = false);
@@ -261,7 +260,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                       child: Padding(
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
-                          'All reviews · ${meal.name}',
+                          AppStrings.of(context).allReviewsFor(meal.name),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -275,7 +274,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                     IconButton(
                       onPressed: () => Navigator.pop(ctx),
                       icon: const Icon(Icons.close_rounded),
-                      tooltip: 'Close',
+                      tooltip: AppStrings.of(context).close,
                     ),
                   ],
                 ),
@@ -287,10 +286,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   itemCount: _reviews.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, i) {
-                    return _buildReviewTile(
-                      _reviews[i],
-                      fullReviewText: true,
-                    );
+                    return _buildReviewTile(_reviews[i], fullReviewText: true);
                   },
                 ),
               ),
@@ -349,7 +345,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     if (uri == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid link')),
+          SnackBar(content: Text(AppStrings.of(context).invalidLink)),
         );
       }
       return;
@@ -358,7 +354,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       if (!await canLaunchUrl(uri)) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cannot open this link on this device')),
+            SnackBar(
+              content: Text(AppStrings.of(context).cannotOpenLinkOnDevice),
+            ),
           );
         }
         return;
@@ -369,13 +367,13 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       }
       if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open link')),
+          SnackBar(content: Text(AppStrings.of(context).couldNotOpenLink)),
         );
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open link')),
+          SnackBar(content: Text(AppStrings.of(context).couldNotOpenLink)),
         );
       }
     }
@@ -404,10 +402,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         setState(() => _isFavorite = false);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Removed from favorites'),
+            SnackBar(
+              content: Text(AppStrings.of(context).removedFromFavorites),
               backgroundColor: Colors.green,
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
             ),
           );
         }
@@ -416,10 +414,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         setState(() => _isFavorite = true);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Added to favorites'),
+            SnackBar(
+              content: Text(AppStrings.of(context).addedToFavorites),
               backgroundColor: Colors.green,
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
             ),
           );
         }
@@ -429,7 +427,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error: ${e.toString().replaceAll('ApiException: ', '')}',
+              AppStrings.of(
+                context,
+              ).genericError(e.toString().replaceAll('ApiException: ', '')),
             ),
             backgroundColor: AppColors.error,
           ),
@@ -453,14 +453,14 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       if (ok) {
         setState(() => _triedMealRecorded = true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Saved to your meal history'),
+          SnackBar(
+            content: Text(AppStrings.of(context).savedToHistory),
             backgroundColor: Colors.green,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save to history')),
+          SnackBar(content: Text(AppStrings.of(context).couldNotSaveToHistory)),
         );
       }
     } catch (e) {
@@ -468,7 +468,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              e is ApiException ? e.message : 'Could not save to history',
+              e is ApiException
+                  ? e.message
+                  : AppStrings.of(context).couldNotSaveToHistory,
             ),
             backgroundColor: AppColors.error,
           ),
@@ -483,6 +485,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     // No meal passed in navigation
     if (_meal == null) {
       return Scaffold(
@@ -495,8 +498,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
             onPressed: () => Navigator.pop(context),
           ),
           centerTitle: true,
-          title: const Text(
-            'Recommendation',
+          title: Text(
+            strings.recommendation,
             style: TextStyle(color: AppColors.textDark),
           ),
         ),
@@ -512,8 +515,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                   color: AppColors.textLight,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'No meal data available',
+                Text(
+                  strings.noMealDataAvailable,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -523,7 +526,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Try going back and requesting a new recommendation.',
+                  strings.tryRequestNewRecommendation,
                   style: TextStyle(fontSize: 14, color: AppColors.textLight),
                   textAlign: TextAlign.center,
                 ),
@@ -531,7 +534,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 ElevatedButton.icon(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text('Back'),
+                  label: Text(strings.back),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.white,
@@ -569,8 +572,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: const Text(
-          'Recommendation',
+        title: Text(
+          strings.recommendation,
           style: TextStyle(color: AppColors.textDark),
         ),
       ),
@@ -582,8 +585,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              const Text(
-                'Your Meal',
+              Text(
+                strings.yourMeal,
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -592,7 +595,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Based on your preferences',
+                strings.basedOnYourPreferences,
                 style: TextStyle(fontSize: 14, color: AppColors.textLight),
               ),
               const SizedBox(height: 24),
@@ -677,8 +680,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          backgroundColor:
-                              AppColors.secondary.withValues(alpha: 0.8),
+                          backgroundColor: AppColors.secondary.withValues(
+                            alpha: 0.8,
+                          ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
                             vertical: 0,
@@ -721,8 +725,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                         ),
                   label: Text(
                     _triedMealRecorded
-                        ? 'Saved to meal history'
-                        : 'I tried this meal',
+                        ? strings.savedToMealHistory
+                        : strings.iTriedThisMeal,
                     style: const TextStyle(fontSize: 13),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -747,8 +751,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               const SizedBox(height: 28),
 
               // Nutrition section
-              const Text(
-                'Nutrition Information',
+              Text(
+                strings.nutritionInformation,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -760,14 +764,18 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildNutritionCard('Calories', '$calories', 'kcal'),
+                    child: _buildNutritionCard(
+                      strings.calories,
+                      '$calories',
+                      'kcal',
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildNutritionCard(
-                      'Protein',
+                      strings.protein,
                       '${protein}g',
-                      'grams',
+                      strings.grams,
                     ),
                   ),
                 ],
@@ -776,19 +784,27 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildNutritionCard('Carbs', '${carbs}g', 'grams'),
+                    child: _buildNutritionCard(
+                      strings.carbs,
+                      '${carbs}g',
+                      strings.grams,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildNutritionCard('Fat', '${fat}g', 'grams'),
+                    child: _buildNutritionCard(
+                      strings.fat,
+                      '${fat}g',
+                      strings.grams,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
 
               if (meal.displayIngredientLines.isNotEmpty) ...[
-                const Text(
-                  'Ingredients',
+                Text(
+                  strings.ingredients,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -828,8 +844,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 const SizedBox(height: 20),
               ],
 
-              const Text(
-                'Recipe',
+              Text(
+                strings.recipeTitle,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -838,9 +854,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               ),
               const SizedBox(height: 10),
               SelectableText(
-                recipeBody.isNotEmpty
-                    ? recipeBody
-                    : 'No written steps for this dish yet. Open the original recipe link below if available.',
+                recipeBody.isNotEmpty ? recipeBody : strings.noWrittenSteps,
                 style: const TextStyle(
                   fontSize: 15,
                   height: 1.5,
@@ -859,18 +873,16 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                     if (meal.recipeSourceUrl != null &&
                         meal.recipeSourceUrl!.trim().isNotEmpty)
                       OutlinedButton.icon(
-                        onPressed: () =>
-                            _openExternalUrl(meal.recipeSourceUrl),
+                        onPressed: () => _openExternalUrl(meal.recipeSourceUrl),
                         icon: const Icon(Icons.link, size: 18),
-                        label: const Text('Original recipe'),
+                        label: Text(strings.originalRecipe),
                       ),
                     if (meal.recipeVideoUrl != null &&
                         meal.recipeVideoUrl!.trim().isNotEmpty)
                       OutlinedButton.icon(
-                        onPressed: () =>
-                            _openExternalUrl(meal.recipeVideoUrl),
+                        onPressed: () => _openExternalUrl(meal.recipeVideoUrl),
                         icon: const Icon(Icons.play_circle_outline, size: 20),
-                        label: const Text('Watch video'),
+                        label: Text(strings.watchVideo),
                       ),
                   ],
                 ),
@@ -902,7 +914,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                         )
                       : const Icon(Icons.rate_review_outlined, size: 18),
                   label: Text(
-                    _reviewSaving ? 'Saving…' : 'Add review',
+                    _reviewSaving ? strings.saving : strings.addReview,
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),
@@ -911,9 +923,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Community reviews',
+                      strings.communityReviews,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -922,8 +934,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                     ),
                   ),
                   IconButton(
-                    onPressed:
-                        _reviewsLoading ? null : _loadReviewsForCurrentMeal,
+                    onPressed: _reviewsLoading
+                        ? null
+                        : _loadReviewsForCurrentMeal,
                     icon: _reviewsLoading
                         ? const SizedBox(
                             width: 22,
@@ -931,13 +944,13 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.refresh_rounded),
-                    tooltip: 'Refresh reviews',
+                    tooltip: strings.refreshReviews,
                   ),
                 ],
               ),
               const SizedBox(height: 6),
               Text(
-                'Ratings and notes from other members',
+                strings.ratingsAndNotesFromMembers,
                 style: TextStyle(fontSize: 13, color: AppColors.textLight),
               ),
               const SizedBox(height: 12),
@@ -950,7 +963,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    'No reviews yet. Use Add review above or the Feed — you can add more than one review over time.',
+                    strings.noReviewsYetHelp,
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.textLight,
@@ -961,12 +974,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               else ...[
                 ..._reviews
                     .take(_kLatestReviewsPreview)
-                    .map(
-                      (r) => _buildReviewTile(
-                        r,
-                        fullReviewText: false,
-                      ),
-                    ),
+                    .map((r) => _buildReviewTile(r, fullReviewText: false)),
                 if (_reviews.length > _kLatestReviewsPreview)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
@@ -983,7 +991,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                         ),
                         icon: const Icon(Icons.expand_more_rounded, size: 22),
                         label: Text(
-                          'View more reviews (${_reviews.length - _kLatestReviewsPreview})',
+                          strings.viewMoreReviews(
+                            _reviews.length - _kLatestReviewsPreview,
+                          ),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1016,8 +1026,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                             ),
                       label: Text(
                         _isAddingFavorite
-                            ? 'Updating...'
-                            : (_isFavorite ? 'Favorited' : 'Favorite'),
+                            ? strings.updating
+                            : (_isFavorite
+                                  ? strings.favorited
+                                  : strings.favorite),
                         style: const TextStyle(fontSize: 14),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -1044,8 +1056,8 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text(
-                        'Try Again',
+                      label: Text(
+                        strings.tryAgain,
                         style: TextStyle(fontSize: 14),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -1068,10 +1080,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     );
   }
 
-  Widget _buildReviewTile(
-    MealReviewItem r, {
-    bool fullReviewText = false,
-  }) {
+  Widget _buildReviewTile(MealReviewItem r, {bool fullReviewText = false}) {
     final dateStr = r.updatedAt != null
         ? DateFormat.yMMMd().format(r.updatedAt!.toLocal())
         : null;
@@ -1146,14 +1155,14 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
                               size: 20,
                               color: AppColors.textLight,
                             ),
-                            tooltip: 'Delete this entry',
+                            tooltip: AppStrings.of(context).deleteThisEntry,
                             onPressed: () => _confirmDeleteReview(r),
                           ),
                 ],
               ),
               const SizedBox(height: 12),
               Text(
-                'Rating',
+                AppStrings.of(context).rating,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -1166,7 +1175,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               if (r.reviewText.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(
-                  'Review',
+                  AppStrings.of(context).review,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -1189,7 +1198,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               ] else ...[
                 const SizedBox(height: 8),
                 Text(
-                  'Rated ${r.rating} star${r.rating == 1 ? '' : 's'} (no written note)',
+                  AppStrings.of(context).ratedNoNote(r.rating),
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textLight,
@@ -1244,7 +1253,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
           },
           child: star == r.rating
               ? Tooltip(
-                  message: 'Tap again to remove',
+                  message: AppStrings.of(context).tapAgainToRemove,
                   child: icon,
                 )
               : icon,
@@ -1341,7 +1350,11 @@ class _ExpandableReviewTextState extends State<_ExpandableReviewText> {
                   foregroundColor: AppColors.primary,
                 ),
                 onPressed: () => setState(() => _expanded = !_expanded),
-                child: Text(_expanded ? 'Show less' : 'Read more'),
+                child: Text(
+                  _expanded
+                      ? AppStrings.of(context).showLess
+                      : AppStrings.of(context).readMore,
+                ),
               ),
           ],
         );

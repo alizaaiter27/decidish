@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/widgets/app_logo.dart';
 import 'package:decidish/services/auth_api_service.dart';
 import 'package:flutter/material.dart';
@@ -103,31 +104,35 @@ class _SignUpScreenState extends State<SignUpScreen>
   }
 
   String? _validateName(String? value) {
+    final strings = AppStrings.of(context);
     final v = (value ?? '').trim();
-    if (v.isEmpty) return 'Name is required';
-    if (v.length < 2) return 'Name is too short';
+    if (v.isEmpty) return strings.nameRequired;
+    if (v.length < 2) return strings.nameTooShort;
     return null;
   }
 
   String? _validateEmail(String? value) {
+    final strings = AppStrings.of(context);
     final v = (value ?? '').trim();
-    if (v.isEmpty) return 'Email is required';
+    if (v.isEmpty) return strings.emailRequired;
     final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    if (!emailRegex.hasMatch(v)) return 'Enter a valid email';
+    if (!emailRegex.hasMatch(v)) return strings.enterValidEmail;
     return null;
   }
 
   String? _validatePassword(String? value) {
+    final strings = AppStrings.of(context);
     final v = value ?? '';
-    if (v.isEmpty) return 'Password is required';
-    if (v.length < 6) return 'Password must be at least 6 characters';
+    if (v.isEmpty) return strings.passwordRequired;
+    if (v.length < 6) return strings.passwordMinLength;
     return null;
   }
 
   String? _validateConfirm(String? value) {
+    final strings = AppStrings.of(context);
     final v = value ?? '';
-    if (v.isEmpty) return 'Confirm your password';
-    if (v != _passwordController.text) return 'Passwords do not match';
+    if (v.isEmpty) return strings.confirmPasswordRequired;
+    if (v != _passwordController.text) return strings.passwordsDoNotMatch;
     return null;
   }
 
@@ -151,9 +156,9 @@ class _SignUpScreenState extends State<SignUpScreen>
       if (response['success'] == true) {
         Navigator.pushReplacementNamed(context, '/onboarding');
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Sign up failed')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.of(context).signupFailed)),
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -179,6 +184,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -208,7 +214,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                         color: AppColors.white,
                         size: 28,
                       ),
-                      tooltip: 'Back to login',
+                      tooltip: strings.backToLogin,
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ),
@@ -248,239 +254,257 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 key: _formKey,
                                 child: Column(
                                   children: [
-                                const Text(
-                                  'Sign up',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textDark,
-                                  ),
-                                ),
-                                const SizedBox(height: 30),
+                                    Text(
+                                      strings.signup,
+                                      style: TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textDark,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 30),
 
-                                // Name
-                                TextFormField(
-                                  controller: _nameController,
-                                  textInputAction: TextInputAction.next,
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                  validator: _validateName,
-                                  decoration: InputDecoration(
-                                    hintText: 'Your name',
-                                    filled: true,
-                                    fillColor: AppColors.white.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    suffixIcon: _nameController.text.isEmpty
-                                        ? null
-                                        : Icon(
-                                            _nameOk
-                                                ? Icons.check_circle
-                                                : Icons.error_outline,
-                                            color: _nameOk
-                                                ? Colors.green
-                                                : Colors.red,
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Email
-                                TextFormField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  textInputAction: TextInputAction.next,
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                  validator: _validateEmail,
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your email',
-                                    filled: true,
-                                    fillColor: AppColors.white.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    suffixIcon: _emailController.text.isEmpty
-                                        ? null
-                                        : Icon(
-                                            _emailOk
-                                                ? Icons.check_circle
-                                                : Icons.error_outline,
-                                            color: _emailOk
-                                                ? Colors.green
-                                                : Colors.red,
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Password
-                                TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  textInputAction: TextInputAction.next,
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                  validator: _validatePassword,
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter your password',
-                                    filled: true,
-                                    fillColor: AppColors.white.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    suffixIcon: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (_passwordController.text.isNotEmpty)
-                                          Icon(
-                                            _passwordOk
-                                                ? Icons.check_circle
-                                                : Icons.error_outline,
-                                            color: _passwordOk
-                                                ? Colors.green
-                                                : Colors.red,
-                                          ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _obscurePassword =
-                                                  !_obscurePassword;
-                                            });
-                                          },
-                                          icon: Icon(
-                                            _obscurePassword
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
-                                            color: AppColors.textLight,
-                                          ),
+                                    // Name
+                                    TextFormField(
+                                      controller: _nameController,
+                                      textInputAction: TextInputAction.next,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      validator: _validateName,
+                                      decoration: InputDecoration(
+                                        hintText: strings.yourName,
+                                        filled: true,
+                                        fillColor: AppColors.white.withValues(
+                                          alpha: 0.5,
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Confirm Password
-                                TextFormField(
-                                  controller: _confirmPasswordController,
-                                  obscureText: _obscureConfirm,
-                                  textInputAction: TextInputAction.done,
-                                  autovalidateMode:
-                                      AutovalidateMode.onUserInteraction,
-                                  validator: _validateConfirm,
-                                  decoration: InputDecoration(
-                                    hintText: 'Confirm your password',
-                                    filled: true,
-                                    fillColor: AppColors.white.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 16,
-                                    ),
-                                    suffixIcon: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (_confirmPasswordController
-                                            .text
-                                            .isNotEmpty)
-                                          Icon(
-                                            _confirmOk
-                                                ? Icons.check_circle
-                                                : Icons.error_outline,
-                                            color: _confirmOk
-                                                ? Colors.green
-                                                : Colors.red,
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
                                           ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _obscureConfirm =
-                                                  !_obscureConfirm;
-                                            });
-                                          },
-                                          icon: Icon(
-                                            _obscureConfirm
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
-                                            color: AppColors.textLight,
-                                          ),
+                                          borderSide: BorderSide.none,
                                         ),
-                                      ],
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 24,
+                                              vertical: 16,
+                                            ),
+                                        suffixIcon: _nameController.text.isEmpty
+                                            ? null
+                                            : Icon(
+                                                _nameOk
+                                                    ? Icons.check_circle
+                                                    : Icons.error_outline,
+                                                color: _nameOk
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                              ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
+                                    const SizedBox(height: 16),
 
-                                _isLoading
-                                    ? const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 12,
+                                    // Email
+                                    TextFormField(
+                                      controller: _emailController,
+                                      keyboardType: TextInputType.emailAddress,
+                                      textInputAction: TextInputAction.next,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      validator: _validateEmail,
+                                      decoration: InputDecoration(
+                                        hintText: strings.enterYourEmail,
+                                        filled: true,
+                                        fillColor: AppColors.white.withValues(
+                                          alpha: 0.5,
                                         ),
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    : ScaleTransition(
-                                        scale: _buttonScaleAnimation,
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: _pressSignUp,
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  AppColors.primary,
-                                              foregroundColor: AppColors.white,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 16,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 24,
+                                              vertical: 16,
+                                            ),
+                                        suffixIcon:
+                                            _emailController.text.isEmpty
+                                            ? null
+                                            : Icon(
+                                                _emailOk
+                                                    ? Icons.check_circle
+                                                    : Icons.error_outline,
+                                                color: _emailOk
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                              ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    // Password
+                                    TextFormField(
+                                      controller: _passwordController,
+                                      obscureText: _obscurePassword,
+                                      textInputAction: TextInputAction.next,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      validator: _validatePassword,
+                                      decoration: InputDecoration(
+                                        hintText: strings.enterYourPassword,
+                                        filled: true,
+                                        fillColor: AppColors.white.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 24,
+                                              vertical: 16,
+                                            ),
+                                        suffixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (_passwordController
+                                                .text
+                                                .isNotEmpty)
+                                              Icon(
+                                                _passwordOk
+                                                    ? Icons.check_circle
+                                                    : Icons.error_outline,
+                                                color: _passwordOk
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                              ),
+                                            IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _obscurePassword =
+                                                      !_obscurePassword;
+                                                });
+                                              },
+                                              icon: Icon(
+                                                _obscurePassword
+                                                    ? Icons.visibility_off
+                                                    : Icons.visibility,
+                                                color: AppColors.textLight,
                                               ),
                                             ),
-                                            child: const Text(
-                                              'sign up',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
+                                          ],
                                         ),
                                       ),
-                              ],
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    // Confirm Password
+                                    TextFormField(
+                                      controller: _confirmPasswordController,
+                                      obscureText: _obscureConfirm,
+                                      textInputAction: TextInputAction.done,
+                                      autovalidateMode:
+                                          AutovalidateMode.onUserInteraction,
+                                      validator: _validateConfirm,
+                                      decoration: InputDecoration(
+                                        hintText: strings.confirmPassword,
+                                        filled: true,
+                                        fillColor: AppColors.white.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 24,
+                                              vertical: 16,
+                                            ),
+                                        suffixIcon: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (_confirmPasswordController
+                                                .text
+                                                .isNotEmpty)
+                                              Icon(
+                                                _confirmOk
+                                                    ? Icons.check_circle
+                                                    : Icons.error_outline,
+                                                color: _confirmOk
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                              ),
+                                            IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _obscureConfirm =
+                                                      !_obscureConfirm;
+                                                });
+                                              },
+                                              icon: Icon(
+                                                _obscureConfirm
+                                                    ? Icons.visibility_off
+                                                    : Icons.visibility,
+                                                color: AppColors.textLight,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+
+                                    _isLoading
+                                        ? const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
+                                            child: CircularProgressIndicator(),
+                                          )
+                                        : ScaleTransition(
+                                            scale: _buttonScaleAnimation,
+                                            child: SizedBox(
+                                              width: double.infinity,
+                                              child: ElevatedButton(
+                                                onPressed: _pressSignUp,
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      AppColors.primary,
+                                                  foregroundColor:
+                                                      AppColors.white,
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        vertical: 16,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          30,
+                                                        ),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  strings.signupLower,
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
                       ],
                     ),
                   ),

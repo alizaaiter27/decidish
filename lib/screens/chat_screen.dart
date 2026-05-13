@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/message_service.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:intl/intl.dart';
@@ -62,9 +63,11 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() {
           _loading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading messages: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.of(context).errorLoadingMessages('$e')),
+          ),
+        );
       }
     }
   }
@@ -78,9 +81,11 @@ class _ChatScreenState extends State<ChatScreen> {
       await _loadMessages();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error sending message: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.of(context).errorSendingMessage('$e')),
+        ),
+      );
     }
   }
 
@@ -103,6 +108,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -112,7 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
           },
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         ),
-        title: Text(_friendName.isNotEmpty ? _friendName : 'Chat'),
+        title: Text(_friendName.isNotEmpty ? _friendName : strings.chat),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textDark,
         elevation: 0,
@@ -210,8 +216,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    decoration: const InputDecoration.collapsed(
-                      hintText: 'Type a message',
+                    decoration: InputDecoration.collapsed(
+                      hintText: strings.typeAMessage,
                     ),
                   ),
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/screens/home_screen.dart';
 import 'package:decidish/screens/favorites_screen.dart';
 import 'package:decidish/screens/feed_screen.dart';
@@ -98,6 +99,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   }
 
   Widget _buildCustomBottomNav() {
+    final strings = AppStrings.of(context);
     return Container(
       height: 80,
       decoration: BoxDecoration(
@@ -119,11 +121,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home_rounded, 'Home', 0),
-            _buildNavItem(Icons.dynamic_feed_rounded, 'Feed', 1),
-            _buildNavItem(Icons.favorite_rounded, 'Favorites', 2),
-            _buildNavItem(Icons.chat_bubble_rounded, 'Chats', 3),
-            _buildNavItem(Icons.person_rounded, 'Profile', 4),
+            _buildNavItem(Icons.home_rounded, strings.navHome, 0),
+            _buildNavItem(Icons.dynamic_feed_rounded, strings.navFeed, 1),
+            _buildNavItem(Icons.favorite_rounded, strings.navFavorites, 2),
+            _buildNavItem(Icons.chat_bubble_rounded, strings.navChats, 3),
+            _buildNavItem(Icons.person_rounded, strings.navProfile, 4),
           ],
         ),
       ),

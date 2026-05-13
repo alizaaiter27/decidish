@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:decidish/models/meal_model.dart';
@@ -98,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -114,15 +116,15 @@ class _HomeScreenState extends State<HomeScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hi, $_userName',
+                          strings.greeting(_userName),
                           style: TextStyle(
                             fontSize: 13,
                             color: AppColors.textLight.withValues(alpha: 0.95),
                           ),
                         ),
                         const SizedBox(height: 2),
-                        const Text(
-                          'Decide what to eat',
+                        Text(
+                          strings.decideWhatToEat,
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -137,10 +139,12 @@ class _HomeScreenState extends State<HomeScreen>
                     visualDensity: VisualDensity.compact,
                     icon: const Icon(Icons.notifications_outlined),
                     color: AppColors.primary,
-                    tooltip: 'Notifications',
+                    tooltip: strings.notifications,
                     onPressed: () {
-                      Navigator.of(context, rootNavigator: true)
-                          .pushNamed('/notifications');
+                      Navigator.of(
+                        context,
+                        rootNavigator: true,
+                      ).pushNamed('/notifications');
                     },
                   ),
                 ],
@@ -166,8 +170,8 @@ class _HomeScreenState extends State<HomeScreen>
                             _buildScoreInfoCard(),
                             const SizedBox(height: 24),
                             if (_rankedMeals.isNotEmpty) ...[
-                              const Text(
-                                'Your ranked matches',
+                              Text(
+                                strings.yourRankedMatches,
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -176,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'Higher points = better fit for you right now.',
+                                strings.higherPointsBetterFit,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textLight,
@@ -186,9 +190,13 @@ class _HomeScreenState extends State<HomeScreen>
                               _buildFeaturedMatch(_rankedMeals.first),
                               if (_rankedMeals.length > 1) ...[
                                 const SizedBox(height: 20),
-                                ..._rankedMeals.skip(1).map(
+                                ..._rankedMeals
+                                    .skip(1)
+                                    .map(
                                       (m) => Padding(
-                                        padding: const EdgeInsets.only(bottom: 10),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 10,
+                                        ),
                                         child: _buildRankedRow(m),
                                       ),
                                     ),
@@ -198,9 +206,11 @@ class _HomeScreenState extends State<HomeScreen>
                                 padding: const EdgeInsets.only(top: 32),
                                 child: Center(
                                   child: Text(
-                                    'No meals to rank yet. Check that the API is running and meals are seeded.',
+                                    strings.noMealsToRank,
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(color: AppColors.textLight),
+                                    style: TextStyle(
+                                      color: AppColors.textLight,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -216,6 +226,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildDecideCard() {
+    final strings = AppStrings.of(context);
     return AnimatedBuilder(
       animation: _buttonScaleAnimation,
       builder: (context, child) {
@@ -245,8 +256,8 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Pick for me',
+                        Text(
+                          strings.pickForMe,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -255,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Tap to answer 5 quick questions — mood, budget, portion, time — then get a short list of meal ideas.',
+                          strings.pickForMeDescription,
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.92),
@@ -272,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen>
                             color: AppColors.secondary,
                             borderRadius: BorderRadius.circular(30),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
@@ -282,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                               SizedBox(width: 8),
                               Text(
-                                'Decide for me',
+                                strings.decideForMe,
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
@@ -306,6 +317,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildFoodLibraryCard() {
+    final strings = AppStrings.of(context);
     return Material(
       color: AppColors.white,
       borderRadius: BorderRadius.circular(16),
@@ -333,12 +345,12 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Food library',
+                      strings.foodLibrary,
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -347,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Browse every meal in the app — A to Z with a live count.',
+                      strings.foodLibraryDescription,
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.35,
@@ -370,6 +382,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildPantryCard() {
+    final strings = AppStrings.of(context);
     return Material(
       color: AppColors.white,
       borderRadius: BorderRadius.circular(16),
@@ -397,12 +410,12 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
               const SizedBox(width: 14),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cook with what I have',
+                      strings.cookWithWhatIHave,
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -411,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'List your ingredients — get ideas ranked by what you already have.',
+                      strings.pantryDescription,
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.35,
@@ -434,6 +447,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildScoreInfoCard() {
+    final strings = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -450,8 +464,8 @@ class _HomeScreenState extends State<HomeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'How match points work',
+                Text(
+                  strings.howMatchPointsWork,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
@@ -460,7 +474,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Points mix your diet & taste settings, similarity to foods you saved, and how often others favorite a dish. Tap a meal to see details.',
+                  strings.matchPointsDescription,
                   style: TextStyle(
                     fontSize: 12,
                     height: 1.4,
@@ -476,6 +490,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildFeaturedMatch(MealModel meal) {
+    final strings = AppStrings.of(context);
     final score = meal.compatibilityScore;
     return Material(
       color: AppColors.white,
@@ -514,8 +529,8 @@ class _HomeScreenState extends State<HomeScreen>
                       color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'BEST MATCH',
+                    child: Text(
+                      strings.bestMatch,
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -544,7 +559,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${score.toStringAsFixed(0)} pts',
+                            strings.points(score.round()),
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               color: AppColors.primary,
@@ -578,7 +593,10 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 10),
               Text(
                 '${meal.nutrition.calories} kcal · ~${meal.preparationTime ?? 0} min',
-                style: const TextStyle(fontSize: 12, color: AppColors.textLight),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textLight,
+                ),
               ),
             ],
           ),

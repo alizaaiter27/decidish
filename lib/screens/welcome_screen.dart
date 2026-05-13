@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/widgets/app_logo.dart';
 import 'package:flutter/material.dart';
 
@@ -56,6 +57,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: SafeArea(
@@ -134,8 +136,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         onPressed: () {
                           Navigator.pushReplacementNamed(context, '/login');
                         },
-                        child: const Text(
-                          'Get Started !',
+                        child: Text(
+                          strings.getStarted,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,

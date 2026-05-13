@@ -3,6 +3,7 @@ import 'package:decidish/services/api_service.dart';
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/post_service.dart';
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +31,7 @@ class _FriendPostsScreenState extends State<FriendPostsScreen> {
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
       _friendId = args['userId']?.toString() ?? '';
-      _friendName = args['name']?.toString() ?? 'Friend';
+      _friendName = args['name']?.toString() ?? AppStrings.of(context).friends;
     }
     if (_friendId.isEmpty) {
       setState(() => _loading = false);
@@ -90,7 +91,7 @@ class _FriendPostsScreenState extends State<FriendPostsScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not update like')),
+          SnackBar(content: Text(AppStrings.of(context).couldNotUpdateLike)),
         );
       }
     }
@@ -103,23 +104,24 @@ class _FriendPostsScreenState extends State<FriendPostsScreen> {
       Navigator.pushNamed(context, '/recommendation', arguments: full);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not load meal')),
+        SnackBar(content: Text(AppStrings.of(context).couldNotLoadMeal)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_friendName.isNotEmpty ? _friendName : 'Posts'),
+        title: Text(_friendName.isNotEmpty ? _friendName : strings.posts),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textDark,
         elevation: 0,
       ),
       body: _friendId.isEmpty
-          ? const Center(child: Text('Missing friend'))
+          ? Center(child: Text(strings.missingFriend))
           : _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -135,7 +137,7 @@ class _FriendPostsScreenState extends State<FriendPostsScreen> {
                       style: const TextStyle(color: AppColors.textLight),
                     ),
                     const SizedBox(height: 16),
-                    FilledButton(onPressed: _load, child: const Text('Retry')),
+                    FilledButton(onPressed: _load, child: Text(strings.retry)),
                   ],
                 ),
               ),
@@ -145,11 +147,11 @@ class _FriendPostsScreenState extends State<FriendPostsScreen> {
               child: _posts.isEmpty
                   ? ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
+                      children: [
                         SizedBox(height: 120),
                         Center(
                           child: Text(
-                            'No posts yet',
+                            strings.noPostsYet,
                             style: TextStyle(color: AppColors.textLight),
                           ),
                         ),
@@ -190,7 +192,8 @@ class _FriendPostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = post.user?.name ?? post.user?.email ?? 'Friend';
+    final name =
+        post.user?.name ?? post.user?.email ?? AppStrings.of(context).friends;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -230,7 +233,9 @@ class _FriendPostTile extends StatelessWidget {
               IconButton(
                 icon: Icon(
                   post.likedByMe ? Icons.favorite : Icons.favorite_border,
-                  color: post.likedByMe ? Colors.redAccent : AppColors.textLight,
+                  color: post.likedByMe
+                      ? Colors.redAccent
+                      : AppColors.textLight,
                 ),
                 onPressed: onLike,
               ),
@@ -269,15 +274,15 @@ class _FriendPostTile extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Recipe',
+                            Text(
+                              AppStrings.of(context).recipe,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textLight,
                               ),
                             ),
                             Text(
-                              post.meal!.name ?? 'Meal',
+                              post.meal!.name ?? AppStrings.of(context).meal,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -299,7 +304,7 @@ class _FriendPostTile extends StatelessWidget {
           ],
           const SizedBox(height: 8),
           Text(
-            '${post.likesCount} likes',
+            AppStrings.of(context).likesCount(post.likesCount),
             style: const TextStyle(fontSize: 12, color: AppColors.textLight),
           ),
         ],

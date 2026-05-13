@@ -9,6 +9,7 @@ import 'package:decidish/services/feed_api_service.dart';
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/post_service.dart';
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
 import 'package:decidish/widgets/meal_review_sheet.dart';
 import 'dart:math' as math;
@@ -154,9 +155,9 @@ class _FeedScreenState extends State<FeedScreen> {
       await MealApiService.rateMeal(id, stars, syncReview: false);
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Could not save rating')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.of(context).couldNotSaveRating)),
+        );
       }
     } finally {
       if (mounted) {
@@ -180,7 +181,7 @@ class _FeedScreenState extends State<FeedScreen> {
         // Already removed on server; local state is cleared.
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not remove rating')),
+          SnackBar(content: Text(AppStrings.of(context).couldNotRemoveRating)),
         );
         await _loadFeed();
       }
@@ -243,7 +244,9 @@ class _FeedScreenState extends State<FeedScreen> {
       );
     } catch (e) {
       if (mounted) {
-        final msg = e is ApiException ? e.message : 'Could not save review';
+        final msg = e is ApiException
+            ? e.message
+            : AppStrings.of(context).couldNotSaveReview;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(msg)));
@@ -261,9 +264,9 @@ class _FeedScreenState extends State<FeedScreen> {
     if (full != null) {
       Navigator.pushNamed(context, '/recommendation', arguments: full);
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Could not load meal')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.of(context).couldNotLoadMeal)),
+      );
     }
   }
 
@@ -281,9 +284,9 @@ class _FeedScreenState extends State<FeedScreen> {
       });
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Could not update like')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.of(context).couldNotUpdateLike)),
+        );
       }
     }
   }
@@ -337,7 +340,9 @@ class _FeedScreenState extends State<FeedScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              e is ApiException ? e.message : 'Could not get recommendation',
+              e is ApiException
+                  ? e.message
+                  : AppStrings.of(context).couldNotGetRecommendation,
             ),
           ),
         );
@@ -354,7 +359,7 @@ class _FeedScreenState extends State<FeedScreen> {
       await _loadFeed();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Posted to the community')),
+          SnackBar(content: Text(AppStrings.of(context).postedToCommunity)),
         );
       }
     }
@@ -388,6 +393,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -410,12 +416,12 @@ class _FeedScreenState extends State<FeedScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'DeciDish',
+                                strings.appTitle,
                                 style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
@@ -423,7 +429,7 @@ class _FeedScreenState extends State<FeedScreen> {
                                 ),
                               ),
                               Text(
-                                'Decide.Eat.Enjoy',
+                                strings.feedTagline,
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textLight,
@@ -440,7 +446,9 @@ class _FeedScreenState extends State<FeedScreen> {
                                 Icons.local_fire_department,
                                 size: 18,
                               ),
-                              label: Text('${_feed!.streakHint} streak'),
+                              label: Text(
+                                strings.streakLabel(_feed!.streakHint),
+                              ),
                               backgroundColor: AppColors.secondary,
                             ),
                           ),
@@ -448,7 +456,7 @@ class _FeedScreenState extends State<FeedScreen> {
                           icon: const Icon(Icons.add_circle_outline),
                           color: AppColors.primary,
                           onPressed: _openNewPost,
-                          tooltip: 'New post',
+                          tooltip: strings.newPost,
                         ),
                       ],
                     ),
@@ -471,20 +479,20 @@ class _FeedScreenState extends State<FeedScreen> {
                               child: Row(
                                 children: [
                                   _FeedFilterPill(
-                                    label: 'All',
+                                    label: strings.all,
                                     selected: _feedTab == _FeedTab.all,
                                     onTap: () => _setMainFeedTab(_FeedTab.all),
                                   ),
                                   const SizedBox(width: 8),
                                   _FeedFilterPill(
-                                    label: 'Meals',
+                                    label: strings.meals,
                                     selected: _feedTab == _FeedTab.meals,
                                     onTap: () =>
                                         _setMainFeedTab(_FeedTab.meals),
                                   ),
                                   const SizedBox(width: 8),
                                   _FeedFilterPill(
-                                    label: 'Social',
+                                    label: strings.social,
                                     selected: _feedTab == _FeedTab.social,
                                     onTap: () =>
                                         _setMainFeedTab(_FeedTab.social),
@@ -524,7 +532,7 @@ class _FeedScreenState extends State<FeedScreen> {
                                   const SizedBox(height: 16),
                                   FilledButton(
                                     onPressed: _loadFeed,
-                                    child: const Text('Retry'),
+                                    child: Text(strings.retry),
                                   ),
                                 ],
                               ),
@@ -591,8 +599,10 @@ class _FeedScreenState extends State<FeedScreen> {
       out.add(
         SliverToBoxAdapter(
           child: _SectionHeader(
-            title: section.title,
-            subtitle: section.subtitle,
+            title: AppStrings.of(context).localizeFeedText(section.title),
+            subtitle: section.subtitle == null
+                ? null
+                : AppStrings.of(context).localizeFeedText(section.subtitle!),
           ),
         ),
       );
@@ -844,7 +854,7 @@ class _SocialSwipeTabBarState extends State<_SocialSwipeTabBar> {
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             child: Center(
                               child: Text(
-                                'Community',
+                                AppStrings.of(context).community,
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.lerp(
@@ -874,7 +884,7 @@ class _SocialSwipeTabBarState extends State<_SocialSwipeTabBar> {
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             child: Center(
                               child: Text(
-                                'Friends',
+                                AppStrings.of(context).friends,
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.lerp(
@@ -913,7 +923,9 @@ class _SocialSwipeTabBarState extends State<_SocialSwipeTabBar> {
                             borderRadius: BorderRadius.circular(2),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.45),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.45,
+                                ),
                                 blurRadius: 6,
                                 spreadRadius: 0,
                                 offset: const Offset(0, 1),
@@ -986,8 +998,8 @@ class _QuickDecide extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Quick decide',
+          Text(
+            AppStrings.of(context).quickDecide,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -995,8 +1007,8 @@ class _QuickDecide extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Pick one or let the app choose for you',
+          Text(
+            AppStrings.of(context).quickDecideSubtitle,
             style: TextStyle(fontSize: 12, color: AppColors.textLight),
           ),
           const SizedBox(height: 12),
@@ -1023,7 +1035,7 @@ class _QuickDecide extends StatelessWidget {
           else if (meals.length == 1)
             _QuickTile(
               meal: meals[0],
-              label: 'Pick',
+              label: AppStrings.of(context).pick,
               onTap: () => onPick(meals[0]),
             ),
           const SizedBox(height: 10),
@@ -1032,12 +1044,12 @@ class _QuickDecide extends StatelessWidget {
               TextButton.icon(
                 onPressed: onShuffle,
                 icon: const Icon(Icons.shuffle, size: 18),
-                label: const Text('Shuffle options'),
+                label: Text(AppStrings.of(context).shuffleOptions),
               ),
               const Spacer(),
               FilledButton.tonal(
                 onPressed: onSurprise,
-                child: const Text('Surprise me'),
+                child: Text(AppStrings.of(context).surpriseMe),
               ),
             ],
           ),
@@ -1272,7 +1284,7 @@ class _MealFeedCard extends StatelessWidget {
                           icon: const Icon(Icons.rate_review_outlined),
                           color: AppColors.textLight,
                           onPressed: onReview,
-                          tooltip: 'Written review',
+                          tooltip: AppStrings.of(context).writtenReview,
                         ),
                         IconButton(
                           padding: EdgeInsets.zero,
@@ -1289,7 +1301,7 @@ class _MealFeedCard extends StatelessWidget {
                                 : AppColors.textLight,
                           ),
                           onPressed: onDecisionTap,
-                          tooltip: 'Decision list',
+                          tooltip: AppStrings.of(context).decisionList,
                         ),
                       ],
                     ),
@@ -1317,7 +1329,8 @@ class _PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = post.user?.name ?? post.user?.email ?? 'Someone';
+    final name =
+        post.user?.name ?? post.user?.email ?? AppStrings.of(context).someone;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -1398,15 +1411,15 @@ class _PostCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Recipe',
+                            Text(
+                              AppStrings.of(context).recipe,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: AppColors.textLight,
                               ),
                             ),
                             Text(
-                              post.meal!.name ?? 'Meal',
+                              post.meal!.name ?? AppStrings.of(context).meal,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -1428,7 +1441,7 @@ class _PostCard extends StatelessWidget {
           ],
           const SizedBox(height: 8),
           Text(
-            '${post.likesCount} likes',
+            AppStrings.of(context).likesCount(post.likesCount),
             style: const TextStyle(fontSize: 12, color: AppColors.textLight),
           ),
         ],
@@ -1495,7 +1508,7 @@ class _NewPostDialogState extends State<_NewPostDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Share with the community'),
+      title: Text(AppStrings.of(context).shareWithCommunity),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1504,8 +1517,8 @@ class _NewPostDialogState extends State<_NewPostDialog> {
             TextField(
               controller: _controller,
               maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Quick review, tip, or dish you loved…',
+              decoration: InputDecoration(
+                hintText: AppStrings.of(context).postInputHint,
               ),
             ),
             const SizedBox(height: 12),
@@ -1514,8 +1527,8 @@ class _NewPostDialogState extends State<_NewPostDialog> {
               icon: const Icon(Icons.restaurant_menu),
               label: Text(
                 _attachedMeal == null
-                    ? 'Attach a meal (optional)'
-                    : 'Change attached meal',
+                    ? AppStrings.of(context).attachMealOptional
+                    : AppStrings.of(context).changeAttachedMeal,
               ),
             ),
             if (_attachedMeal != null) ...[
@@ -1546,7 +1559,7 @@ class _NewPostDialogState extends State<_NewPostDialog> {
                   onPressed: _loading
                       ? null
                       : () => setState(() => _attachedMeal = null),
-                  tooltip: 'Remove',
+                  tooltip: AppStrings.of(context).remove,
                 ),
               ),
             ],
@@ -1557,11 +1570,11 @@ class _NewPostDialogState extends State<_NewPostDialog> {
       actions: [
         TextButton(
           onPressed: _loading ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppStrings.of(context).cancel),
         ),
         FilledButton(
           onPressed: _loading ? null : _submit,
-          child: const Text('Post'),
+          child: Text(AppStrings.of(context).post),
         ),
       ],
     );
@@ -1626,7 +1639,7 @@ class _AttachMealSheetState extends State<_AttachMealSheet> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search meals to attach',
+                  hintText: AppStrings.of(context).searchMealsToAttach,
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.search),

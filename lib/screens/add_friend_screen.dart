@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:decidish/services/api_service.dart';
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/services/friend_service.dart';
+import 'package:decidish/l10n/app_strings.dart';
 
 /// Same search as [FriendsScreen] inline search; kept for direct navigation.
 class AddFriendScreen extends StatefulWidget {
@@ -74,16 +75,16 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     if (userId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not read user id')),
+        SnackBar(content: Text(AppStrings.of(context).couldNotReadUserId)),
       );
       return;
     }
     try {
       await FriendService.sendRequest(userId);
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Friend request sent')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.of(context).friendRequestSent)),
+      );
       setState(() {
         _results = _results.where((u) {
           return FriendService.friendIdFromMap(u) != userId;
@@ -94,17 +95,16 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
       final msg = e is ApiException
           ? e.message
           : e.toString().replaceAll('ApiException: ', '');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Friend'),
+        title: Text(strings.addFriend),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textDark,
         elevation: 0,
@@ -120,7 +120,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
               onChanged: _onChanged,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: 'Search by name or email (min. 2 characters)',
+                hintText: strings.searchNameOrEmailMin2,
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: AppColors.white,
@@ -140,7 +140,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Results update as you type.',
+              strings.resultsUpdateAsType,
               style: TextStyle(fontSize: 12, color: AppColors.textLight),
             ),
             const SizedBox(height: 12),
@@ -156,17 +156,16 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                 itemBuilder: (context, index) {
                   final u = _results[index];
                   final name = u is Map
-                      ? (u['name']?.toString() ?? 'Unknown')
-                      : 'Unknown';
-                  final email =
-                      u is Map ? (u['email']?.toString() ?? '') : '';
+                      ? (u['name']?.toString() ?? strings.unknownUserName())
+                      : strings.unknownUserName();
+                  final email = u is Map ? (u['email']?.toString() ?? '') : '';
                   return Card(
                     child: ListTile(
                       title: Text(name),
                       subtitle: Text(email),
                       trailing: FilledButton.tonal(
                         onPressed: () => _sendRequest(u),
-                        child: const Text('Add'),
+                        child: Text(strings.add),
                       ),
                     ),
                   );

@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:flutter/material.dart';
 
@@ -102,18 +103,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
 
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/home',
-          (route) => false,
-        );
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/home', (route) => false);
       }
     } catch (e) {
       if (mounted) {
+        final strings = AppStrings.of(context);
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error saving preferences: ${e.toString().replaceAll('ApiException: ', '')}',
+              strings.errorSavingPreferences(
+                e.toString().replaceAll('ApiException: ', ''),
+              ),
             ),
             backgroundColor: Colors.red,
           ),
@@ -124,7 +127,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final stepText = 'Step ${_currentPage + 1} of $_totalSteps';
+    final strings = AppStrings.of(context);
+    final stepText = strings.stepOf(_currentPage + 1, _totalSteps);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -142,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         onPressed: _prevPage,
                         icon: const Icon(Icons.arrow_back),
                         color: AppColors.textDark,
-                        tooltip: 'Back',
+                        tooltip: strings.back,
                       ),
                       const SizedBox(width: 6),
                       Expanded(
@@ -168,8 +172,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     curve: Curves.easeInOut,
                                   );
                                 },
-                          child: const Text(
-                            'Skip',
+                          child: Text(
+                            strings.skip,
                             style: TextStyle(color: AppColors.primary),
                           ),
                         ),
@@ -255,8 +259,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         )
                       : Text(
                           _currentPage == _totalSteps - 1
-                              ? 'Get Started'
-                              : 'Next',
+                              ? strings.getStarted
+                              : strings.next,
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -272,6 +276,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildWelcomePage() {
+    final strings = AppStrings.of(context);
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -279,8 +284,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           Icon(Icons.waving_hand, size: 80, color: AppColors.primary),
           const SizedBox(height: 30),
-          const Text(
-            'Welcome to DeciDish!',
+          Text(
+            strings.onboardingWelcomeTitle,
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -290,7 +295,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Let\'s personalize your food experience. We\'ll ask a few questions to understand your preferences.',
+            strings.onboardingWelcomeDescription,
             style: TextStyle(fontSize: 16, color: AppColors.textLight),
             textAlign: TextAlign.center,
           ),
@@ -300,13 +305,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildDietTypePage() {
+    final strings = AppStrings.of(context);
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'What\'s your diet type?',
+          Text(
+            strings.dietTypeQuestion,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -315,7 +321,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Choose one that best describes you',
+            strings.chooseBestDiet,
             style: TextStyle(fontSize: 14, color: AppColors.textLight),
           ),
           const SizedBox(height: 30),
@@ -374,13 +380,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildAllergiesPage() {
+    final strings = AppStrings.of(context);
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Any allergies?',
+          Text(
+            strings.allergyQuestion,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -389,7 +396,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Select all that apply (optional)',
+            strings.selectAllOptional,
             style: TextStyle(fontSize: 14, color: AppColors.textLight),
           ),
           const SizedBox(height: 30),
@@ -445,13 +452,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildPreferencesPage() {
+    final strings = AppStrings.of(context);
     return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Food Preferences',
+          Text(
+            strings.foodPreferences,
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -460,7 +468,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            'What do you like and dislike?',
+            strings.likesDislikesQuestion,
             style: TextStyle(fontSize: 14, color: AppColors.textLight),
           ),
           const SizedBox(height: 30),

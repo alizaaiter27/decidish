@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:decidish/services/push_notification_service.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
@@ -26,6 +27,7 @@ import 'utils/page_transitions.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await LocaleController.loadSavedLocale();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   runApp(const DeciDishApp());
   // After first frame so iOS can finish registerForRemoteNotifications + APNs handshake.
@@ -45,101 +47,116 @@ class DeciDishApp extends StatelessWidget {
       // brightness: Brightness.light,
     );
 
-    return MaterialApp(
-      onGenerateTitle: (context) => AppStrings.of(context).appTitle,
-      debugShowCheckedModeBanner: false,
-      localizationsDelegates: const [
-        AppStrings.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: AppStrings.supportedLocales,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: colorScheme,
-        scaffoldBackgroundColor: AppColors.background,
-      ),
-      home: const WelcomeScreen(),
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/':
-            return FadePageRoute(page: const LoginScreen(), settings: settings);
-          case '/login':
-            return SlidePageRoute(
-              page: const LoginScreen(),
-              settings: settings,
-            );
-          case '/signup':
-            return SlidePageRoute(
-              page: const SignUpScreen(),
-              settings: settings,
-            );
-          case '/onboarding':
-            return SlidePageRoute(
-              page: const OnboardingScreen(),
-              settings: settings,
-            );
-          case '/home':
-            return FadePageRoute(
-              page: const MainNavigationScreen(),
-              settings: settings,
-            );
-          case '/recommendation':
-            return SlidePageRoute(
-              page: const RecommendationScreen(),
-              settings: settings,
-            );
-          case '/friends':
-            return SlidePageRoute(
-              page: const FriendsScreen(),
-              settings: settings,
-            );
-          case '/friend_requests':
-            return SlidePageRoute(
-              page: const FriendRequestsScreen(),
-              settings: settings,
-            );
-          case '/chat':
-            return SlidePageRoute(page: const ChatScreen(), settings: settings);
-          case '/add_friend':
-            return SlidePageRoute(
-              page: const AddFriendScreen(),
-              settings: settings,
-            );
-          case '/friend_posts':
-            return SlidePageRoute(
-              page: const FriendPostsScreen(),
-              settings: settings,
-            );
-          case '/preferences':
-            return SlidePageRoute(
-              page: const PreferencesScreen(),
-              settings: settings,
-            );
-          case '/pantry':
-            return SlidePageRoute(
-              page: const PantryScreen(),
-              settings: settings,
-            );
-          case '/meal_library':
-            return SlidePageRoute(
-              page: const MealLibraryScreen(),
-              settings: settings,
-            );
-          case '/notifications':
-            return SlidePageRoute(
-              page: const NotificationsScreen(),
-              settings: settings,
-            );
-          case '/history':
-            return SlidePageRoute(
-              page: const HistoryScreen(),
-              settings: settings,
-            );
-          default:
-            return FadePageRoute(page: const LoginScreen(), settings: settings);
-        }
+    return ValueListenableBuilder<Locale?>(
+      valueListenable: LocaleController.localeNotifier,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          locale: locale,
+          onGenerateTitle: (context) => AppStrings.of(context).appTitle,
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: const [
+            AppStrings.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppStrings.supportedLocales,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: colorScheme,
+            scaffoldBackgroundColor: AppColors.background,
+          ),
+          home: const WelcomeScreen(),
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case '/':
+                return FadePageRoute(
+                  page: const LoginScreen(),
+                  settings: settings,
+                );
+              case '/login':
+                return SlidePageRoute(
+                  page: const LoginScreen(),
+                  settings: settings,
+                );
+              case '/signup':
+                return SlidePageRoute(
+                  page: const SignUpScreen(),
+                  settings: settings,
+                );
+              case '/onboarding':
+                return SlidePageRoute(
+                  page: const OnboardingScreen(),
+                  settings: settings,
+                );
+              case '/home':
+                return FadePageRoute(
+                  page: const MainNavigationScreen(),
+                  settings: settings,
+                );
+              case '/recommendation':
+                return SlidePageRoute(
+                  page: const RecommendationScreen(),
+                  settings: settings,
+                );
+              case '/friends':
+                return SlidePageRoute(
+                  page: const FriendsScreen(),
+                  settings: settings,
+                );
+              case '/friend_requests':
+                return SlidePageRoute(
+                  page: const FriendRequestsScreen(),
+                  settings: settings,
+                );
+              case '/chat':
+                return SlidePageRoute(
+                  page: const ChatScreen(),
+                  settings: settings,
+                );
+              case '/add_friend':
+                return SlidePageRoute(
+                  page: const AddFriendScreen(),
+                  settings: settings,
+                );
+              case '/friend_posts':
+                return SlidePageRoute(
+                  page: const FriendPostsScreen(),
+                  settings: settings,
+                );
+              case '/preferences':
+                return SlidePageRoute(
+                  page: const PreferencesScreen(),
+                  settings: settings,
+                );
+              case '/pantry':
+                return SlidePageRoute(
+                  page: const PantryScreen(),
+                  settings: settings,
+                );
+              case '/meal_library':
+                return SlidePageRoute(
+                  page: const MealLibraryScreen(),
+                  settings: settings,
+                );
+              case '/notifications':
+                return SlidePageRoute(
+                  page: const NotificationsScreen(),
+                  settings: settings,
+                );
+              case '/history':
+                return SlidePageRoute(
+                  page: const HistoryScreen(),
+                  settings: settings,
+                );
+              default:
+                return FadePageRoute(
+                  page: const LoginScreen(),
+                  settings: settings,
+                );
+            }
+          },
+        );
       },
     );
   }

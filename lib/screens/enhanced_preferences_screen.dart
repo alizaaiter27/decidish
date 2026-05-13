@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import '../utils/app_colors.dart';
 import '../services/user_api_service.dart';
 import '../models/user_model.dart';
@@ -157,8 +158,8 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Preferences saved successfully!'),
+        SnackBar(
+          content: Text(AppStrings.of(context).preferencesSaved),
           backgroundColor: Colors.green,
         ),
       );
@@ -167,7 +168,7 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error saving preferences: $e'),
+          content: Text(AppStrings.of(context).errorSavingPreferences('$e')),
           backgroundColor: Colors.red,
         ),
       );
@@ -178,13 +179,14 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.white,
         elevation: 0,
-        title: const Text(
-          'Enhanced Preferences',
+        title: Text(
+          strings.enhancedPreferences,
           style: TextStyle(
             color: AppColors.textDark,
             fontWeight: FontWeight.bold,
@@ -208,8 +210,8 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
                       ),
                     ),
                   )
-                : const Text(
-                    'Save',
+                : Text(
+                    strings.save,
                     style: TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -225,27 +227,27 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('Preferred Meal Types'),
+              _buildSectionTitle(strings.preferredMealTypes),
               _buildMealTypeChips(),
               const SizedBox(height: 24),
 
-              _buildSectionTitle('Taste Preferences'),
+              _buildSectionTitle(strings.tastePreferences),
               _buildTastePreferences(),
               const SizedBox(height: 24),
 
-              _buildSectionTitle('Preferred Cooking Methods'),
+              _buildSectionTitle(strings.preferredCookingMethods),
               _buildCookingMethodChips(),
               const SizedBox(height: 24),
 
-              _buildSectionTitle('Dietary Restrictions'),
+              _buildSectionTitle(strings.dietaryRestrictions),
               _buildDietaryRestrictionChips(),
               const SizedBox(height: 24),
 
-              _buildSectionTitle('Time & Difficulty'),
+              _buildSectionTitle(strings.timeAndDifficulty),
               _buildTimeAndDifficulty(),
               const SizedBox(height: 24),
 
-              _buildSectionTitle('Seasonal Preference'),
+              _buildSectionTitle(strings.seasonalPreference),
               _buildSeasonalPreference(),
             ],
           ),
@@ -441,9 +443,10 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
   }
 
   Widget _buildTimeAndDifficulty() {
+    final strings = AppStrings.of(context);
     return Column(
       children: [
-        Text('Max Preparation Time: ${_maxPrepTime.round()} minutes'),
+        Text(strings.maxPreparationTime(_maxPrepTime.round())),
         Slider(
           value: _maxPrepTime,
           min: 15,

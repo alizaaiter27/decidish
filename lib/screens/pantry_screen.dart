@@ -1,4 +1,5 @@
 import 'package:decidish/models/meal_model.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/api_service.dart' show ApiException;
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/utils/app_colors.dart';
@@ -50,8 +51,9 @@ class _PantryScreenState extends State<PantryScreen> {
   }
 
   Future<void> _search() async {
+    final strings = AppStrings.of(context);
     if (_ingredients.isEmpty) {
-      setState(() => _error = 'Add at least one ingredient.');
+      setState(() => _error = strings.addAtLeastOneIngredient);
       return;
     }
     FocusScope.of(context).unfocus();
@@ -66,17 +68,14 @@ class _PantryScreenState extends State<PantryScreen> {
         _results = meals;
         _loading = false;
         if (meals.isEmpty) {
-          _error =
-              'No recipes matched those items yet. Try staples you often cook with (rice, eggs, pasta, onion…).';
+          _error = strings.noPantryMatches;
         }
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = e is ApiException
-            ? e.message
-            : 'Something went wrong. Try again.';
+        _error = e is ApiException ? e.message : strings.tryAgainGeneric;
       });
     }
   }
@@ -87,13 +86,14 @@ class _PantryScreenState extends State<PantryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
         foregroundColor: AppColors.textDark,
-        title: const Text('Cook with what I have'),
+        title: Text(strings.pantryTitle),
       ),
       body: SafeArea(
         child: Column(
@@ -102,7 +102,7 @@ class _PantryScreenState extends State<PantryScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: Text(
-                'List what’s in your fridge or pantry. We’ll suggest dishes you can make or almost make.',
+                strings.pantryIntro,
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.4,
@@ -122,7 +122,7 @@ class _PantryScreenState extends State<PantryScreen> {
                       textInputAction: TextInputAction.done,
                       onSubmitted: (_) => _addIngredient(),
                       decoration: InputDecoration(
-                        hintText: 'e.g. chicken, rice, lime',
+                        hintText: strings.pantryHint,
                         filled: true,
                         fillColor: AppColors.white,
                         border: OutlineInputBorder(
@@ -159,7 +159,7 @@ class _PantryScreenState extends State<PantryScreen> {
                           vertical: 14,
                         ),
                       ),
-                      child: const Text('Add'),
+                      child: Text(strings.add),
                     ),
                   ),
                 ],
@@ -200,7 +200,9 @@ class _PantryScreenState extends State<PantryScreen> {
                         ),
                       )
                     : const Icon(Icons.search_rounded),
-                label: Text(_loading ? 'Searching…' : 'Find meal ideas'),
+                label: Text(
+                  _loading ? strings.searching : strings.findMealIdeas,
+                ),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -280,14 +282,13 @@ class _PantryScreenState extends State<PantryScreen> {
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 2,
-                                                ),
+                                                      horizontal: 8,
+                                                      vertical: 2,
+                                                    ),
                                                 decoration: BoxDecoration(
                                                   color: AppColors.secondary,
                                                   borderRadius:
-                                                      BorderRadius.circular(
-                                                          20),
+                                                      BorderRadius.circular(20),
                                                 ),
                                                 child: Text(
                                                   '${pm.coveragePercent}%',
@@ -312,11 +313,14 @@ class _PantryScreenState extends State<PantryScreen> {
                                           ),
                                         ],
                                         if (pm != null &&
-                                            pm.missingIngredients
+                                            pm
+                                                .missingIngredients
                                                 .isNotEmpty) ...[
                                           const SizedBox(height: 6),
                                           Text(
-                                            'Still need: ${pm.missingIngredients.join(', ')}',
+                                            strings.stillNeed(
+                                              pm.missingIngredients.join(', '),
+                                            ),
                                             style: const TextStyle(
                                               fontSize: 11,
                                               height: 1.35,

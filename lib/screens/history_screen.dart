@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/history_api_service.dart';
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
@@ -55,19 +56,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Clear History'),
-          content: const Text(
-            'Are you sure you want to clear all your meal history? This action cannot be undone.',
-          ),
+          title: Text(AppStrings.of(context).clearHistory),
+          content: Text(AppStrings.of(context).clearHistoryConfirm),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(AppStrings.of(context).cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Clear'),
+              child: Text(AppStrings.of(context).clear),
             ),
           ],
         );
@@ -98,7 +97,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              response['message'] ?? 'History cleared successfully',
+              response['message'] ?? AppStrings.of(context).historyCleared,
             ),
             backgroundColor: Colors.green,
           ),
@@ -109,7 +108,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response['message'] ?? 'Failed to clear history'),
+            content: Text(
+              response['message'] ?? AppStrings.of(context).clearHistoryFailed,
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -122,7 +123,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(AppStrings.of(context).genericError(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -137,13 +138,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
       if (difference.inDays == 0) {
         if (difference.inHours == 0) {
-          return '${difference.inMinutes} minutes ago';
+          return AppStrings.of(context).minutesAgo(difference.inMinutes);
         }
-        return '${difference.inHours} hours ago';
+        return AppStrings.of(context).hoursAgo(difference.inHours);
       } else if (difference.inDays == 1) {
-        return 'Yesterday';
+        return AppStrings.of(context).yesterday;
       } else if (difference.inDays < 7) {
-        return '${difference.inDays} days ago';
+        return AppStrings.of(context).daysAgo(difference.inDays);
       } else {
         return DateFormat('MMM d, y').format(date);
       }
@@ -154,6 +155,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -162,10 +164,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: AppColors.textDark),
           onPressed: () => Navigator.of(context).pop(),
-          tooltip: 'Back',
+          tooltip: strings.back,
         ),
-        title: const Text(
-          'History',
+        title: Text(
+          strings.history,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -180,7 +182,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Icons.clear_all_rounded,
                 color: AppColors.primary,
               ),
-              tooltip: 'Clear history',
+              tooltip: strings.clearHistoryTooltip,
             ),
         ],
       ),
@@ -216,7 +218,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             const SizedBox(height: 20),
                             ElevatedButton(
                               onPressed: _loadHistory,
-                              child: const Text('Retry'),
+                              child: Text(strings.retry),
                             ),
                           ],
                         ),
@@ -236,7 +238,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'No meal history yet',
+                              strings.noMealHistoryYet,
                               style: TextStyle(
                                 fontSize: 18,
                                 color: AppColors.textLight,
@@ -261,7 +263,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
                           final date = item['date'] != null
                               ? _formatDate(item['date'].toString())
-                              : 'Unknown date';
+                              : strings.unknownDate;
 
                           return GestureDetector(
                             onTap: meal == null
@@ -307,7 +309,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          meal?.name ?? 'Unknown meal',
+                                          meal?.name ?? strings.unknownMeal,
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,

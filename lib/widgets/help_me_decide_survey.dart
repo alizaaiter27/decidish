@@ -1,4 +1,5 @@
 import 'package:decidish/models/meal_model.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/survey_api_service.dart';
 import 'package:decidish/utils/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -97,14 +98,15 @@ class _HelpMeDecideSurveyState extends State<HelpMeDecideSurvey> {
       );
     } catch (_) {}
     if (!mounted) return;
-    await Navigator.of(context, rootNavigator: true).pushNamed(
-      '/recommendation',
-      arguments: meal,
-    );
+    await Navigator.of(
+      context,
+      rootNavigator: true,
+    ).pushNamed('/recommendation', arguments: meal);
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
@@ -120,9 +122,9 @@ class _HelpMeDecideSurveyState extends State<HelpMeDecideSurvey> {
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Help me decide',
+                      strings.helpMeDecide,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -166,59 +168,59 @@ class _HelpMeDecideSurveyState extends State<HelpMeDecideSurvey> {
                       onPageChanged: (i) => setState(() => _page = i),
                       children: [
                         _QuestionPage(
-                          title: 'What sounds good right now?',
-                          subtitle: 'Mood',
-                          options: const [
-                            _Opt('comfort', 'Comfort & cozy'),
-                            _Opt('energetic', 'Fresh & energizing'),
-                            _Opt('light', 'Light & easy'),
-                            _Opt('treat', 'A little indulgent'),
+                          title: strings.questionMoodTitle,
+                          subtitle: strings.questionMoodSubtitle,
+                          options: [
+                            _Opt('comfort', strings.moodComfort),
+                            _Opt('energetic', strings.moodEnergetic),
+                            _Opt('light', strings.moodLight),
+                            _Opt('treat', strings.moodTreat),
                           ],
                           selected: _mood,
                           onSelect: (v) => setState(() => _mood = v),
                         ),
                         _QuestionPage(
-                          title: 'What kind of meal?',
-                          subtitle: 'Occasion',
-                          options: const [
-                            _Opt('Breakfast', 'Breakfast'),
-                            _Opt('Lunch', 'Lunch'),
-                            _Opt('Dinner', 'Dinner'),
-                            _Opt('Snack', 'Snack'),
-                            _Opt('Dessert', 'Dessert'),
+                          title: strings.questionMealTypeTitle,
+                          subtitle: strings.questionMealTypeSubtitle,
+                          options: [
+                            _Opt('Breakfast', strings.breakfast),
+                            _Opt('Lunch', strings.lunch),
+                            _Opt('Dinner', strings.dinner),
+                            _Opt('Snack', strings.snack),
+                            _Opt('Dessert', strings.dessert),
                           ],
                           selected: _mealType,
                           onSelect: (v) => setState(() => _mealType = v),
                         ),
                         _QuestionPage(
-                          title: 'Rough budget (groceries)',
-                          subtitle: 'Per serving, approximate',
-                          options: const [
-                            _Opt('low', r'$ — budget-friendly'),
-                            _Opt('medium', r'$$ — moderate'),
-                            _Opt('high', r'$$$ — flexible'),
+                          title: strings.questionBudgetTitle,
+                          subtitle: strings.questionBudgetSubtitle,
+                          options: [
+                            _Opt('low', strings.budgetLow),
+                            _Opt('medium', strings.budgetMedium),
+                            _Opt('high', strings.budgetHigh),
                           ],
                           selected: _budgetTier,
                           onSelect: (v) => setState(() => _budgetTier = v),
                         ),
                         _QuestionPage(
-                          title: 'Portion size',
-                          subtitle: 'How hungry are you?',
-                          options: const [
-                            _Opt('light', 'Light'),
-                            _Opt('regular', 'Regular'),
-                            _Opt('hearty', 'Hearty'),
+                          title: strings.questionPortionTitle,
+                          subtitle: strings.questionPortionSubtitle,
+                          options: [
+                            _Opt('light', strings.portionLight),
+                            _Opt('regular', strings.portionRegular),
+                            _Opt('hearty', strings.portionHearty),
                           ],
                           selected: _portion,
                           onSelect: (v) => setState(() => _portion = v),
                         ),
                         _QuestionPage(
-                          title: 'Time to cook',
-                          subtitle: 'Prep & cook',
-                          options: const [
-                            _Opt('quick', 'Quick (~25 min or less)'),
-                            _Opt('medium', 'Medium (~45 min)'),
-                            _Opt('flexible', 'No rush'),
+                          title: strings.questionTimeTitle,
+                          subtitle: strings.questionTimeSubtitle,
+                          options: [
+                            _Opt('quick', strings.timeQuick),
+                            _Opt('medium', strings.timeMedium),
+                            _Opt('flexible', strings.timeFlexible),
                           ],
                           selected: _timeFeeling,
                           onSelect: (v) => setState(() => _timeFeeling = v),
@@ -244,7 +246,7 @@ class _HelpMeDecideSurveyState extends State<HelpMeDecideSurvey> {
                             curve: Curves.easeOut,
                           );
                         },
-                        child: const Text('Back'),
+                        child: Text(strings.back),
                       )
                     else
                       const SizedBox(width: 72),
@@ -263,7 +265,9 @@ class _HelpMeDecideSurveyState extends State<HelpMeDecideSurvey> {
                                 }
                               },
                         child: Text(
-                          _page < _questionCount - 1 ? 'Next' : 'See ideas',
+                          _page < _questionCount - 1
+                              ? strings.next
+                              : strings.seeIdeas,
                         ),
                       ),
                     ),
@@ -386,6 +390,7 @@ class _ResultsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     if (error != null) {
       return Center(
         child: Padding(
@@ -395,24 +400,18 @@ class _ResultsPage extends StatelessWidget {
       );
     }
     if (meals.isEmpty) {
-      return const Center(
-        child: Text('No matches yet — try different answers.'),
-      );
+      return Center(child: Text(strings.noMatchesYetTryDifferent));
     }
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       children: [
-        const Text(
-          'Ideas for you',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        Text(
+          strings.ideasForYou,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
-          'Tap a meal for a full preview — Back returns you here. '
-          'Close this sheet when you are done.',
+          strings.ideasHelpText,
           style: TextStyle(fontSize: 13, color: AppColors.textLight),
         ),
         const SizedBox(height: 12),
@@ -450,7 +449,9 @@ class _ResultsPage extends StatelessWidget {
                               ),
                             if (m.compatibilityScore != null)
                               Text(
-                                'Match ${m.compatibilityScore!.toStringAsFixed(0)} pts',
+                                strings.matchPoints(
+                                  m.compatibilityScore!.round(),
+                                ),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
@@ -460,7 +461,10 @@ class _ResultsPage extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right, color: AppColors.textLight),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.textLight,
+                      ),
                     ],
                   ),
                 ),

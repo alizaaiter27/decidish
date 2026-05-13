@@ -1,5 +1,6 @@
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/services/friend_service.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:flutter/material.dart';
 
 class FriendRequestsScreen extends StatefulWidget {
@@ -49,14 +50,14 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
       await FriendService.acceptRequest(id);
       await _loadRequests();
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Friend request accepted')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.of(context).friendRequestAccepted)),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.of(context).genericError('$e'))),
+      );
     }
   }
 
@@ -65,23 +66,24 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
       await FriendService.declineRequest(id);
       await _loadRequests();
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Friend request declined')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.of(context).friendRequestDeclined)),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppStrings.of(context).genericError('$e'))),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Friend Requests'),
+        title: Text(strings.friendRequests),
         backgroundColor: AppColors.white,
         foregroundColor: AppColors.textDark,
         elevation: 0,
@@ -91,7 +93,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
           : _error != null
           ? Center(child: Text(_error!))
           : _requests.isEmpty
-          ? const Center(child: Text('No incoming requests'))
+          ? Center(child: Text(strings.noIncomingRequests))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: _requests.length,
@@ -101,7 +103,9 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
                 return Card(
                   child: ListTile(
                     title: Text(
-                      from != null ? from['name'] ?? 'Unknown' : 'Unknown',
+                      from != null
+                          ? from['name'] ?? strings.unknownUserName()
+                          : strings.unknownUserName(),
                     ),
                     subtitle: Text(from != null ? from['email'] ?? '' : ''),
                     trailing: Row(

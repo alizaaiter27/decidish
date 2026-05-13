@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:decidish/services/auth_api_service.dart';
 import 'package:decidish/services/api_service.dart' show ApiException;
@@ -12,8 +13,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String _userName = 'Loading...';
-  String _userEmail = 'Loading...';
+  String _userName = '...';
+  String _userEmail = '...';
   String _dietType = 'None';
   bool _isLoading = true;
   String? _error;
@@ -61,7 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     if (ok == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password updated')),
+        SnackBar(content: Text(AppStrings.of(context).passwordUpdated)),
       );
     }
   }
@@ -70,18 +71,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await AuthApiService.logout();
       if (mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/login',
-          (route) => false,
-        );
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Logout error: ${e.toString().replaceAll('ApiException: ', '')}',
+              AppStrings.of(
+                context,
+              ).logoutError(e.toString().replaceAll('ApiException: ', '')),
             ),
             backgroundColor: Colors.red,
           ),
@@ -92,6 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -102,8 +102,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  const Text(
-                    'Profile',
+                  Text(
+                    strings.profile,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -133,30 +133,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildSettingItem(
                               context,
                               Icons.group,
-                              'Friends',
-                              'Search, add people, and see requests',
+                              strings.friends,
+                              strings.friendsSubtitle,
                               () {
-                                Navigator.of(context, rootNavigator: true)
-                                    .pushNamed('/friends');
+                                Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).pushNamed('/friends');
                               },
                             ),
                             const SizedBox(height: 8),
                             _buildSettingItem(
                               context,
                               Icons.history_rounded,
-                              'Meal history',
-                              'Meals you tried from recommendations',
+                              strings.mealHistory,
+                              strings.mealHistorySubtitle,
                               () {
-                                Navigator.of(context, rootNavigator: true)
-                                    .pushNamed('/history');
+                                Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).pushNamed('/history');
                               },
                             ),
                             const SizedBox(height: 8),
                             _buildSettingItem(
                               context,
                               Icons.settings,
-                              'Edit Preferences',
-                              'Change diet, allergies, and food preferences',
+                              strings.editPreferences,
+                              strings.editPreferencesSubtitle,
                               () {
                                 Navigator.pushNamed(
                                   context,
@@ -169,27 +173,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildSettingItem(
                               context,
                               Icons.lock_outline,
-                              'Change password',
-                              'Update your account password',
+                              strings.changePassword,
+                              strings.changePasswordSubtitle,
                               _showChangePasswordDialog,
                             ),
                             _buildSettingItem(
                               context,
                               Icons.notifications,
-                              'Notifications',
-                              'Manage notification settings',
+                              strings.notifications,
+                              strings.notificationsSubtitle,
                               () {
                                 showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('Notifications'),
-                                    content: const Text(
-                                      'Notification settings are coming soon.',
+                                    title: Text(strings.notifications),
+                                    content: Text(
+                                      strings.comingSoonNotificationSettings,
                                     ),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
-                                        child: const Text('OK'),
+                                        child: Text(strings.ok),
                                       ),
                                     ],
                                   ),
@@ -199,20 +203,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildSettingItem(
                               context,
                               Icons.help_outline,
-                              'Help & Support',
-                              'Get help or contact support',
+                              strings.helpAndSupport,
+                              strings.helpAndSupportSubtitle,
                               () {
                                 showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    title: const Text('Help & Support'),
-                                    content: const Text(
-                                      'For support, please email support@decidish.com.',
-                                    ),
+                                    title: Text(strings.helpAndSupport),
+                                    content: Text(strings.supportEmailText),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
-                                        child: const Text('Close'),
+                                        child: Text(strings.close),
                                       ),
                                     ],
                                   ),
@@ -222,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildSettingItem(
                               context,
                               Icons.info_outline,
-                              'About',
+                              strings.about,
                               'Version 1.0.0',
                               () {
                                 showAboutDialog(
@@ -255,8 +257,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       borderRadius: BorderRadius.circular(30),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Logout',
+                                  child: Text(
+                                    strings.logout,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -330,7 +332,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Diet: $_dietType',
+                    AppStrings.of(context).dietLabel(_dietType),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.white,
@@ -355,12 +357,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(Icons.error_outline, size: 80, color: AppColors.textLight),
             const SizedBox(height: 20),
             Text(
-              _error ?? 'Something went wrong.',
+              _error ?? AppStrings.of(context).somethingWentWrong,
               style: TextStyle(fontSize: 18, color: AppColors.textLight),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
+            ElevatedButton(
+              onPressed: _loadProfile,
+              child: Text(AppStrings.of(context).retry),
+            ),
           ],
         ),
       ),
@@ -476,8 +481,9 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return AlertDialog(
-      title: const Text('Change password'),
+      title: Text(strings.changePassword),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -488,23 +494,19 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                 controller: _current,
                 obscureText: true,
                 enabled: !_submitting,
-                decoration: const InputDecoration(
-                  labelText: 'Current password',
-                ),
+                decoration: InputDecoration(labelText: strings.currentPassword),
                 validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Required' : null,
+                    (v == null || v.isEmpty) ? strings.required : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _next,
                 obscureText: true,
                 enabled: !_submitting,
-                decoration: const InputDecoration(
-                  labelText: 'New password (min 6 characters)',
-                ),
+                decoration: InputDecoration(labelText: strings.newPasswordMin6),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
-                  if (v.length < 6) return 'At least 6 characters';
+                  if (v == null || v.isEmpty) return strings.required;
+                  if (v.length < 6) return strings.atLeast6Chars;
                   return null;
                 },
               ),
@@ -513,12 +515,12 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                 controller: _confirm,
                 obscureText: true,
                 enabled: !_submitting,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm new password',
+                decoration: InputDecoration(
+                  labelText: strings.confirmNewPassword,
                 ),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
-                  if (v != _next.text) return 'Does not match';
+                  if (v == null || v.isEmpty) return strings.required;
+                  if (v != _next.text) return strings.doesNotMatch;
                   return null;
                 },
               ),
@@ -528,8 +530,10 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _submitting ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          onPressed: _submitting
+              ? null
+              : () => Navigator.of(context).pop(false),
+          child: Text(strings.cancel),
         ),
         FilledButton(
           onPressed: _submitting ? null : _submit,
@@ -539,7 +543,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                   height: 22,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Save'),
+              : Text(strings.save),
         ),
       ],
     );
