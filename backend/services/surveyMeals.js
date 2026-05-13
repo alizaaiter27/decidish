@@ -10,6 +10,8 @@ const {
   hasPreferredCuisines,
   pickRandomizedTopFromSorted,
 } = require('./preferenceUtils');
+const { resolveMealPlain } = require('../utils/mealLocale');
+const { subsampleArray } = require('./mealCandidatePool');
 
 const MAX_SUGGESTIONS = 5;
 const MAX_PICKS_STORED = 40;
@@ -115,8 +117,9 @@ async function relaxQueryStep(q, step) {
 
 /**
  * Returns scored meal documents (plain objects + compatibilityScore + surveyBoost).
+ * @param {'en'|'tr'} [lang='en'] — merges `localeTr` into display fields when `tr`.
  */
-async function getSurveySuggestions(userId, answers) {
+async function getSurveySuggestions(userId, answers, lang = 'en') {
   const user = await User.findById(userId).populate({
     path: 'surveyInsights.picks.meal',
     select: 'cuisine tags name',
@@ -151,6 +154,10 @@ async function getSurveySuggestions(userId, answers) {
 
   if (answers.mealType) {
     meals = meals.filter((m) => m.mealType === answers.mealType);
+  }
+
+  if (meals.length > 280) {
+    meals = subsampleArray(meals, 280);
   }
 
   const ctx = await loadScoringContext(
@@ -189,10 +196,14 @@ async function getSurveySuggestions(userId, answers) {
   const hasCuisinePrefs = hasPreferredCuisines(user.preferences?.preferredCuisines);
 
   if (hasCuisinePrefs) {
-    return scored.slice(0, MAX_SUGGESTIONS);
+    return scored
+      .slice(0, MAX_SUGGESTIONS)
+      .map((row) => resolveMealPlain({ ...row }, lang));
   }
 
-  return pickRandomizedTopFromSorted(scored, MAX_SUGGESTIONS, 25);
+  return pickRandomizedTopFromSorted(scored, MAX_SUGGESTIONS, 25).map((row) =>
+    resolveMealPlain({ ...row }, lang)
+  );
 }
 
 async function recordSurveyPick(userId, payload) {

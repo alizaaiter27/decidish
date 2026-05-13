@@ -2,6 +2,7 @@ const express = require('express');
 const Favorite = require('../models/Favorite');
 const Meal = require('../models/Meal');
 const { protect } = require('../middleware/auth');
+const { getMealContentLang, resolveDocOrPlain } = require('../utils/mealLocale');
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router.use(protect);
 // @access  Private
 router.get('/', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const favorites = await Favorite.find({ user: req.user.id })
       .populate('meal')
       .sort({ createdAt: -1 });
@@ -22,7 +24,7 @@ router.get('/', async (req, res) => {
       count: favorites.length,
       favorites: favorites.map(fav => ({
         id: fav._id,
-        meal: fav.meal,
+        meal: resolveDocOrPlain(fav.meal, lang),
         createdAt: fav.createdAt,
       })),
     });
@@ -40,6 +42,7 @@ router.get('/', async (req, res) => {
 // @access  Private
 router.post('/', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const { mealId } = req.body;
 
     if (!mealId) {
@@ -82,7 +85,7 @@ router.post('/', async (req, res) => {
       success: true,
       favorite: {
         id: favorite._id,
-        meal: favorite.meal,
+        meal: resolveDocOrPlain(favorite.meal, lang),
         createdAt: favorite.createdAt,
       },
     });

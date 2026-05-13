@@ -1,5 +1,6 @@
 import 'package:decidish/utils/app_colors.dart' show AppColors;
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/services/favorites_api_service.dart';
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
@@ -12,7 +13,8 @@ class FavoritesScreen extends StatefulWidget {
   State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> {
+class _FavoritesScreenState extends State<FavoritesScreen>
+    with WidgetsBindingObserver {
   List<MealModel> _favorites = [];
   bool _isLoading = true;
   String? _error;
@@ -20,7 +22,25 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LocaleController.localeNotifier.addListener(_onMealLocaleChanged);
     _loadFavorites();
+  }
+
+  @override
+  void dispose() {
+    LocaleController.localeNotifier.removeListener(_onMealLocaleChanged);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _onMealLocaleChanged() {
+    if (mounted) _loadFavorites();
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (mounted) _loadFavorites();
   }
 
   Future<void> _loadFavorites() async {

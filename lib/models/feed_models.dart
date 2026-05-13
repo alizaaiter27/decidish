@@ -6,17 +6,21 @@ class FeedPostMeal {
     required this.id,
     this.name,
     this.imageUrl,
+    this.displayLocale,
   });
 
   final String id;
   final String? name;
   final String? imageUrl;
+  /// `'tr'` when API merged Turkish from DB for this summary.
+  final String? displayLocale;
 
   factory FeedPostMeal.fromJson(Map<String, dynamic> json) {
     return FeedPostMeal(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
       name: json['name']?.toString(),
       imageUrl: json['imageUrl']?.toString(),
+      displayLocale: json['displayLocale'] as String?,
     );
   }
 }

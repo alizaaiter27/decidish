@@ -17,23 +17,33 @@ const {
   hasPreferredCuisines,
   pickRandomizedTopFromSorted,
 } = require('../services/preferenceUtils');
+const { getMealContentLang, resolveMealPlain } = require('../utils/mealLocale');
+const { findMealsForScoring } = require('../services/mealCandidatePool');
 
 const router = express.Router();
 
 router.use(protect);
 
-function toMealPayload(doc, extra = {}) {
+function toMealPayload(doc, extra = {}, lang = 'en') {
   const o = doc.toObject ? doc.toObject() : { ...doc };
-  return { ...o, ...extra };
+  const merged = { ...o, ...extra };
+  return resolveMealPlain(merged, lang);
 }
 
-function feedPostJson(p, uid) {
+function feedPostJson(p, uid, lang = 'en') {
   const likes = p.likes || [];
   const liked = likes.some((id) => id.equals(uid));
-  const meal =
-    p.meal && p.meal._id
-      ? { id: p.meal._id, name: p.meal.name, imageUrl: p.meal.imageUrl || '' }
-      : null;
+  let meal = null;
+  if (p.meal && p.meal._id) {
+    const pl = p.meal.toObject ? p.meal.toObject() : p.meal;
+    const r = resolveMealPlain({ ...pl }, lang);
+    meal = {
+      id: p.meal._id,
+      name: r.name,
+      imageUrl: r.imageUrl || '',
+      displayLocale: r.displayLocale || 'en',
+    };
+  }
   return {
     id: p._id,
     content: p.content,
@@ -47,14 +57,14 @@ function feedPostJson(p, uid) {
   };
 }
 
-function pickQuickOptions(scoredList, n = 2) {
+function pickQuickOptions(scoredList, n = 2, lang = 'en') {
   if (scoredList.length === 0) return [];
   const pool = scoredList.slice(0, Math.min(8, scoredList.length));
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, n).map((x) => toMealPayload(x.meal, {
     compatibilityScore: x.total,
     scoreBreakdown: x.breakdown,
-  }));
+  }, lang));
 }
 
 // @route GET /api/feed
@@ -67,6 +77,7 @@ router.get('/', async (req, res) => {
     }
 
     const currentMealType = req.query.mealType || getTimeBasedMealType();
+    const lang = getMealContentLang(req);
     const maxBudget = user.preferences?.maxMealBudget;
 
     const cuisineFilter = buildCuisineQueryFilter(user.preferences?.preferredCuisines);
@@ -77,7 +88,7 @@ router.get('/', async (req, res) => {
     }
     mealQuery = mergeWithCuisineFilter(mealQuery, cuisineFilter);
 
-    const allMeals = await Meal.find(mealQuery);
+    const allMeals = await findMealsForScoring(mealQuery, 320);
     const mealIds = allMeals.map((m) => m._id);
 
     const ctx = await loadScoringContext(user._id, mealIds);
@@ -100,7 +111,7 @@ router.get('/', async (req, res) => {
       toMealPayload(s.meal, {
         compatibilityScore: s.total,
         scoreBreakdown: s.breakdown,
-      })
+      }, lang)
     );
 
     const bySimilarity = [...scored].sort((a, b) => b.similarityPoints - a.similarityPoints);
@@ -113,7 +124,7 @@ router.get('/', async (req, res) => {
         compatibilityScore: s.total,
         scoreBreakdown: s.breakdown,
         similarityPoints: s.similarityPoints,
-      })
+      }, lang)
     );
 
     const trendingAgg = await Favorite.aggregate([
@@ -140,7 +151,7 @@ router.get('/', async (req, res) => {
     const trendingNearYou = trendingDocs.map((m) =>
       toMealPayload(m, {
         favoriteCount: favCountMap.get(m._id.toString()) || 0,
-      })
+      }, lang)
     );
 
     const uid = new mongoose.Types.ObjectId(req.user.id);
@@ -148,9 +159,9 @@ router.get('/', async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(20)
       .populate('user', 'name email')
-      .populate('meal', 'name imageUrl');
+      .populate('meal', 'name imageUrl localeTr');
 
-    const communityPosts = posts.map((p) => feedPostJson(p, uid));
+    const communityPosts = posts.map((p) => feedPostJson(p, uid, lang));
 
     const friendIds = (user.friends || []).filter(Boolean);
     let friendsActivity = [];
@@ -159,9 +170,9 @@ router.get('/', async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(12)
         .populate('user', 'name email')
-        .populate('meal', 'name imageUrl');
+        .populate('meal', 'name imageUrl localeTr');
 
-      friendsActivity = fp.map((p) => feedPostJson(p, uid));
+      friendsActivity = fp.map((p) => feedPostJson(p, uid, lang));
     }
 
     const ratings = await MealRating.find({ user: req.user.id }).select(
@@ -199,7 +210,7 @@ router.get('/', async (req, res) => {
       }
     }
 
-    const quickDecide = pickQuickOptions(scored, 2);
+    const quickDecide = pickQuickOptions(scored, 2, lang);
 
     res.json({
       success: true,

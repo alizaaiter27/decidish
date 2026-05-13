@@ -10,6 +10,7 @@ import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/post_service.dart';
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
 import 'package:decidish/widgets/meal_review_sheet.dart';
 import 'dart:math' as math;
@@ -27,7 +28,7 @@ class FeedScreen extends StatefulWidget {
   State<FeedScreen> createState() => _FeedScreenState();
 }
 
-class _FeedScreenState extends State<FeedScreen> {
+class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
   FeedPayload? _feed;
   bool _loading = true;
   String? _error;
@@ -46,6 +47,8 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LocaleController.localeNotifier.addListener(_onMealLocaleChanged);
     _socialPageIndex = _socialSub == _SocialSub.friends ? 1 : 0;
     _socialPageController = PageController(initialPage: _socialPageIndex);
     _loadDecisionIds();
@@ -54,8 +57,19 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   void dispose() {
+    LocaleController.localeNotifier.removeListener(_onMealLocaleChanged);
+    WidgetsBinding.instance.removeObserver(this);
     _socialPageController.dispose();
     super.dispose();
+  }
+
+  void _onMealLocaleChanged() {
+    if (mounted) _loadFeed();
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (mounted) _loadFeed();
   }
 
   void _setMainFeedTab(_FeedTab tab) {
@@ -96,8 +110,12 @@ class _FeedScreenState extends State<FeedScreen> {
       _error = null;
     });
     try {
-      final payload = await FeedApiService.getFeed();
-      final favs = await FavoritesApiService.getFavorites();
+      final results = await Future.wait([
+        FeedApiService.getFeed(),
+        FavoritesApiService.getFavorites(),
+      ]);
+      final payload = results[0] as FeedPayload;
+      final favs = results[1] as List<MealModel>;
       if (!mounted) return;
       setState(() {
         _feed = payload;

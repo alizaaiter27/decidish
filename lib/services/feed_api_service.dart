@@ -1,6 +1,7 @@
 import '../config/api_config.dart';
 import '../models/feed_models.dart';
 import '../models/meal_model.dart';
+import 'api_locale_params.dart';
 import 'api_service.dart';
 
 class FeedPayload {
@@ -24,7 +25,10 @@ class FeedPayload {
 
 class FeedApiService {
   static Future<FeedPayload> getFeed() async {
-    final response = await ApiService.get(ApiConfig.feed, requireAuth: true);
+    final response = await ApiService.get(
+      ApiLocaleParams.withMealContentLang(ApiConfig.feed),
+      requireAuth: true,
+    );
 
     if (response['success'] != true) {
       throw Exception(response['message']?.toString() ?? 'Feed failed');

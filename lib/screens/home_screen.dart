@@ -1,5 +1,6 @@
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/services/user_api_service.dart';
 import 'package:decidish/models/meal_model.dart';
@@ -16,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _buttonController;
   late Animation<double> _buttonScaleAnimation;
 
@@ -27,6 +28,8 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LocaleController.localeNotifier.addListener(_onMealLocaleChanged);
     _buttonController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
@@ -39,14 +42,27 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    LocaleController.localeNotifier.removeListener(_onMealLocaleChanged);
+    WidgetsBinding.instance.removeObserver(this);
     _buttonController.dispose();
     super.dispose();
   }
 
+  void _onMealLocaleChanged() {
+    if (mounted) _loadRankedMeals();
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (mounted) _loadRankedMeals();
+  }
+
   Future<void> _initData() async {
     try {
-      await _loadUserName();
-      await _loadRankedMeals();
+      await Future.wait([
+        _loadUserName(),
+        _loadRankedMeals(),
+      ]);
     } catch (_) {}
   }
 

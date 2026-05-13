@@ -1,5 +1,6 @@
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
@@ -13,7 +14,8 @@ class MealLibraryScreen extends StatefulWidget {
   State<MealLibraryScreen> createState() => _MealLibraryScreenState();
 }
 
-class _MealLibraryScreenState extends State<MealLibraryScreen> {
+class _MealLibraryScreenState extends State<MealLibraryScreen>
+    with WidgetsBindingObserver {
   List<MealModel> _allMeals = [];
   bool _loading = true;
   String? _error;
@@ -22,14 +24,27 @@ class _MealLibraryScreenState extends State<MealLibraryScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LocaleController.localeNotifier.addListener(_onMealLocaleChanged);
     _searchController.addListener(() => setState(() {}));
     _load();
   }
 
   @override
   void dispose() {
+    LocaleController.localeNotifier.removeListener(_onMealLocaleChanged);
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onMealLocaleChanged() {
+    if (mounted) _load();
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (mounted) _load();
   }
 
   Future<void> _load() async {

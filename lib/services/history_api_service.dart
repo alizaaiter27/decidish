@@ -1,11 +1,12 @@
 import '../services/api_service.dart';
+import '../services/api_locale_params.dart';
 import '../config/api_config.dart';
 
 class HistoryApiService {
   /// Records that the user tried this meal (server adds a history row).
   static Future<bool> addMealToHistory(String mealId) async {
     final response = await ApiService.post(
-      ApiConfig.history,
+      ApiLocaleParams.withMealContentLang(ApiConfig.history),
       {'mealId': mealId},
       requireAuth: true,
     );
@@ -18,12 +19,14 @@ class HistoryApiService {
     int page = 1,
   }) async {
     final response = await ApiService.get(
-      '${ApiConfig.history}?limit=$limit&page=$page',
+      ApiLocaleParams.withMealContentLang(
+        '${ApiConfig.history}?limit=$limit&page=$page',
+      ),
       requireAuth: true,
     );
 
     if (response['success'] == true && response['history'] != null) {
-      return List<Map<String, dynamic>>.from(response['history']);
+      return List<Map<String, dynamic>>.from(response['history'] as List);
     }
 
     return [];
@@ -54,7 +57,7 @@ class HistoryApiService {
     if (notes != null) body['notes'] = notes;
 
     final response = await ApiService.put(
-      '${ApiConfig.history}/$historyId',
+      ApiLocaleParams.withMealContentLang('${ApiConfig.history}/$historyId'),
       body,
       requireAuth: true,
     );

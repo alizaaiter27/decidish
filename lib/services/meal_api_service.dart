@@ -1,6 +1,8 @@
 import '../models/meal_model.dart';
 import '../models/meal_review_model.dart';
 import '../services/api_service.dart';
+import '../services/api_locale_params.dart';
+import '../services/meal_display_translation.dart';
 import '../config/api_config.dart';
 
 class MealApiService {
@@ -23,7 +25,9 @@ class MealApiService {
       queryString = '?mealType=${Uri.encodeComponent(mealType)}';
     }
     final response = await ApiService.get(
-      '${ApiConfig.meals}/personalized$queryString',
+      ApiLocaleParams.withMealContentLang(
+        '${ApiConfig.meals}/personalized$queryString',
+      ),
       requireAuth: true,
     );
 
@@ -53,11 +57,13 @@ class MealApiService {
       queryParams += 'search=$search';
     }
 
-    final response = await ApiService.get('${ApiConfig.meals}$queryParams');
+    final response = await ApiService.get(
+      ApiLocaleParams.withMealContentLang('${ApiConfig.meals}$queryParams'),
+    );
 
     if (response['success'] == true && response['meals'] != null) {
       return (response['meals'] as List)
-          .map((meal) => MealModel.fromJson(meal))
+          .map((meal) => MealModel.fromJson(Map<String, dynamic>.from(meal as Map)))
           .toList();
     }
 
@@ -66,10 +72,15 @@ class MealApiService {
 
   // Get single meal by ID
   static Future<MealModel?> getMealById(String mealId) async {
-    final response = await ApiService.get('${ApiConfig.meals}/$mealId');
+    final response = await ApiService.get(
+      ApiLocaleParams.withMealContentLang('${ApiConfig.meals}/$mealId'),
+    );
 
     if (response['success'] == true && response['meal'] != null) {
-      return MealModel.fromJson(response['meal']);
+      final m = MealModel.fromJson(
+        Map<String, dynamic>.from(response['meal'] as Map),
+      );
+      return MealDisplayTranslation.localizeFull(m);
     }
 
     return null;
@@ -110,7 +121,9 @@ class MealApiService {
     final query = params.isEmpty
         ? ''
         : '?${params.entries.map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}').join('&')}';
-    final endpoint = '${ApiConfig.recommendations}$query';
+    final endpoint = ApiLocaleParams.withMealContentLang(
+      '${ApiConfig.recommendations}$query',
+    );
 
     final response = await ApiService.get(endpoint, requireAuth: true);
 
@@ -126,7 +139,8 @@ class MealApiService {
           mealMap['scoreBreakdown'] = c['scoreBreakdown'];
         }
       }
-      return MealModel.fromJson(mealMap);
+      final m = MealModel.fromJson(mealMap);
+      return MealDisplayTranslation.localizeFull(m);
     }
 
     return null;
@@ -135,7 +149,7 @@ class MealApiService {
   /// Meals ranked by overlap with ingredients you have on hand (`POST /meals/pantry`).
   static Future<List<MealModel>> getMealsFromPantry(List<String> ingredients) async {
     final response = await ApiService.post(
-      '${ApiConfig.meals}/pantry',
+      ApiLocaleParams.withMealContentLang('${ApiConfig.meals}/pantry'),
       {'ingredients': ingredients},
       requireAuth: true,
     );

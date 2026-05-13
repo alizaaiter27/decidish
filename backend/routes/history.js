@@ -2,6 +2,7 @@ const express = require('express');
 const History = require('../models/History');
 const Meal = require('../models/Meal');
 const { protect } = require('../middleware/auth');
+const { getMealContentLang, resolveDocOrPlain } = require('../utils/mealLocale');
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router.use(protect);
 // @access  Private
 router.get('/', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const { limit = 50, page = 1 } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -32,7 +34,7 @@ router.get('/', async (req, res) => {
       pages: Math.ceil(total / parseInt(limit)),
       history: histories.map(h => ({
         id: h._id,
-        meal: h.meal,
+        meal: resolveDocOrPlain(h.meal, lang),
         date: h.date,
         rating: h.rating,
         notes: h.notes,
@@ -53,6 +55,7 @@ router.get('/', async (req, res) => {
 // @access  Private
 router.post('/', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const { mealId } = req.body;
 
     if (!mealId) {
@@ -82,7 +85,7 @@ router.post('/', async (req, res) => {
       success: true,
       history: {
         id: history._id,
-        meal: history.meal,
+        meal: resolveDocOrPlain(history.meal, lang),
         date: history.date,
         rating: history.rating,
         notes: history.notes,
@@ -149,6 +152,7 @@ router.get('/stats', async (req, res) => {
 // @access  Private
 router.put('/:id', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const { rating, notes } = req.body;
 
     const history = await History.findOne({
@@ -184,7 +188,7 @@ router.put('/:id', async (req, res) => {
       success: true,
       history: {
         id: history._id,
-        meal: history.meal,
+        meal: resolveDocOrPlain(history.meal, lang),
         date: history.date,
         rating: history.rating,
         notes: history.notes,

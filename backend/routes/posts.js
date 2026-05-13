@@ -4,6 +4,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const Meal = require('../models/Meal');
 const { protect } = require('../middleware/auth');
+const { getMealContentLang, resolveMealPlain } = require('../utils/mealLocale');
 
 const router = express.Router();
 
@@ -22,13 +23,14 @@ router.get('/user/:userId', async (req, res) => {
     if (!isFriend) {
       return res.status(403).json({ success: false, message: 'You can only view posts from friends' });
     }
+    const lang = getMealContentLang(req);
     const posts = await Post.find({ user: targetId })
       .sort({ createdAt: -1 })
       .limit(50)
       .populate('user', 'name email')
-      .populate('meal', 'name imageUrl');
+      .populate('meal', 'name imageUrl localeTr');
 
-    const list = posts.map((p) => serializePost(p, req.user.id));
+    const list = posts.map((p) => serializePost(p, req.user.id, lang));
     res.json({ success: true, posts: list });
   } catch (error) {
     console.error('List user posts error:', error);
@@ -36,16 +38,19 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-function mealSummary(m) {
+function mealSummary(m, lang = 'en') {
   if (!m || !m._id) return null;
+  const pl = m.toObject ? m.toObject() : m;
+  const r = resolveMealPlain({ ...pl }, lang);
   return {
     id: m._id,
-    name: m.name,
-    imageUrl: m.imageUrl || '',
+    name: r.name,
+    imageUrl: r.imageUrl || '',
+    displayLocale: r.displayLocale || 'en',
   };
 }
 
-function serializePost(p, userId) {
+function serializePost(p, userId, lang = 'en') {
   const uid = new mongoose.Types.ObjectId(userId);
   const likes = p.likes || [];
   const liked = likes.some((id) => id.equals(uid));
@@ -58,7 +63,7 @@ function serializePost(p, userId) {
     user: p.user
       ? { id: p.user._id, name: p.user.name, email: p.user.email }
       : null,
-    meal: mealSummary(p.meal),
+    meal: mealSummary(p.meal, lang),
   };
 }
 
@@ -88,9 +93,10 @@ router.post('/', async (req, res) => {
       meal: mealRef,
     });
     await post.populate('user', 'name email');
-    await post.populate('meal', 'name imageUrl');
+    await post.populate('meal', 'name imageUrl localeTr');
 
-    res.status(201).json({ success: true, post: serializePost(post, req.user.id) });
+    const lang = getMealContentLang(req);
+    res.status(201).json({ success: true, post: serializePost(post, req.user.id, lang) });
   } catch (error) {
     console.error('Create post error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -101,13 +107,14 @@ router.post('/', async (req, res) => {
 // GET /api/posts
 router.get('/', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .limit(50)
       .populate('user', 'name email')
-      .populate('meal', 'name imageUrl');
+      .populate('meal', 'name imageUrl localeTr');
 
-    const list = posts.map((p) => serializePost(p, req.user.id));
+    const list = posts.map((p) => serializePost(p, req.user.id, lang));
 
     res.json({ success: true, posts: list });
   } catch (error) {
@@ -132,11 +139,12 @@ router.post('/:id/like', async (req, res) => {
     }
     await post.populate([
       { path: 'user', select: 'name email' },
-      { path: 'meal', select: 'name imageUrl' },
+      { path: 'meal', select: 'name imageUrl localeTr' },
     ]);
+    const lang = getMealContentLang(req);
     res.json({
       success: true,
-      ...serializePost(post, req.user.id),
+      ...serializePost(post, req.user.id, lang),
     });
   } catch (error) {
     console.error('Like post error:', error);
@@ -156,11 +164,12 @@ router.delete('/:id/like', async (req, res) => {
     await post.save();
     await post.populate([
       { path: 'user', select: 'name email' },
-      { path: 'meal', select: 'name imageUrl' },
+      { path: 'meal', select: 'name imageUrl localeTr' },
     ]);
+    const lang = getMealContentLang(req);
     res.json({
       success: true,
-      ...serializePost(post, req.user.id),
+      ...serializePost(post, req.user.id, lang),
     });
   } catch (error) {
     console.error('Unlike post error:', error);

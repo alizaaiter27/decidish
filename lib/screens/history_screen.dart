@@ -1,5 +1,6 @@
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/services/history_api_service.dart';
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/widgets/meal_network_image.dart';
@@ -13,7 +14,8 @@ class HistoryScreen extends StatefulWidget {
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends State<HistoryScreen>
+    with WidgetsBindingObserver {
   List<Map<String, dynamic>> _history = [];
   bool _isLoading = true;
   String? _error;
@@ -21,7 +23,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LocaleController.localeNotifier.addListener(_onMealLocaleChanged);
     _loadHistory();
+  }
+
+  @override
+  void dispose() {
+    LocaleController.localeNotifier.removeListener(_onMealLocaleChanged);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _onMealLocaleChanged() {
+    if (mounted) _loadHistory();
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (mounted) _loadHistory();
   }
 
   Future<void> _loadHistory() async {

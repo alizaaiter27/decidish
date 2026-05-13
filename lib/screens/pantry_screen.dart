@@ -1,5 +1,6 @@
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/services/api_service.dart' show ApiException;
 import 'package:decidish/services/meal_api_service.dart';
 import 'package:decidish/utils/app_colors.dart';
@@ -14,7 +15,7 @@ class PantryScreen extends StatefulWidget {
   State<PantryScreen> createState() => _PantryScreenState();
 }
 
-class _PantryScreenState extends State<PantryScreen> {
+class _PantryScreenState extends State<PantryScreen> with WidgetsBindingObserver {
   final TextEditingController _input = TextEditingController();
   final FocusNode _focus = FocusNode();
   final List<String> _ingredients = [];
@@ -23,10 +24,34 @@ class _PantryScreenState extends State<PantryScreen> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LocaleController.localeNotifier.addListener(_onMealLocaleChanged);
+  }
+
+  @override
   void dispose() {
+    LocaleController.localeNotifier.removeListener(_onMealLocaleChanged);
+    WidgetsBinding.instance.removeObserver(this);
     _input.dispose();
     _focus.dispose();
     super.dispose();
+  }
+
+  void _onMealLocaleChanged() {
+    if (!mounted) return;
+    if (_ingredients.isNotEmpty) {
+      _search();
+    }
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (!mounted) return;
+    if (_ingredients.isNotEmpty) {
+      _search();
+    }
   }
 
   void _addIngredient() {

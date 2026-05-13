@@ -16,8 +16,15 @@ const {
   buildCuisineQueryFilter,
   mergeWithCuisineFilter,
   hasPreferredCuisines,
-  randomizeTopPortion,
+  pickRandomizedTopFromSorted,
 } = require('../services/preferenceUtils');
+const { findMealsForScoring } = require('../services/mealCandidatePool');
+const {
+  getMealContentLang,
+  buildMealSearchFilter,
+  resolveMealPlain,
+  resolveDocOrPlain,
+} = require('../utils/mealLocale');
 
 const router = express.Router();
 
@@ -64,6 +71,7 @@ router.get('/personalized', protect, async (req, res) => {
       ? String(req.query.mealType)
       : getTimeBasedMealType();
 
+    const lang = getMealContentLang(req);
     const { dietType, cuisine, search } = req.query;
     const parts = [];
 
@@ -80,14 +88,9 @@ router.get('/personalized', protect, async (req, res) => {
       if (cuisineFilter) parts.push(cuisineFilter);
     }
 
-    if (search) {
-      parts.push({
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { tags: { $in: [new RegExp(search, 'i')] } },
-        ],
-      });
+    const searchFilter = buildMealSearchFilter(search, lang);
+    if (searchFilter) {
+      parts.push(searchFilter);
     }
 
     const query =
@@ -97,7 +100,7 @@ router.get('/personalized', protect, async (req, res) => {
           ? parts[0]
           : { $and: parts };
 
-    const meals = await Meal.find(query).sort({ createdAt: -1 });
+    const meals = await findMealsForScoring(query, 320);
 
     if (meals.length === 0) {
       return res.json({
@@ -115,7 +118,8 @@ router.get('/personalized', protect, async (req, res) => {
 
     const scored = meals.map((meal) => {
       const { total, breakdown } = computeMealScore(meal, user, ctx, currentMealType);
-      const mealObj = meal.toObject();
+      const src = meal.toObject ? meal.toObject() : meal;
+      const mealObj = resolveMealPlain(src, lang);
       return {
         ...mealObj,
         compatibilityScore: total,
@@ -128,9 +132,15 @@ router.get('/personalized', protect, async (req, res) => {
     const restrictByCuisinePrefs =
       hasPreferredCuisines(user.preferences?.preferredCuisines) || Boolean(cuisine);
 
+    /** Home only shows ~10; cap payload so we never ship the whole scored catalog. */
+    const RESPONSE_LIMIT = 60;
     const mealsOut = restrictByCuisinePrefs
-      ? scored
-      : randomizeTopPortion(scored, 50);
+      ? scored.slice(0, RESPONSE_LIMIT)
+      : pickRandomizedTopFromSorted(
+          scored,
+          Math.min(RESPONSE_LIMIT, scored.length),
+          Math.min(45, scored.length),
+        );
 
     res.json({
       success: true,
@@ -166,7 +176,8 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({ success: false, errors: errors.array() });
       }
-      const meals = await getSurveySuggestions(req.user.id, req.body);
+      const lang = getMealContentLang(req);
+      const meals = await getSurveySuggestions(req.user.id, req.body, lang);
       res.json({
         success: true,
         count: meals.length,
@@ -209,8 +220,9 @@ router.post(
       const cuisineFilter = buildCuisineQueryFilter(user?.preferences?.preferredCuisines);
       const mealQuery = mergeWithCuisineFilter({}, cuisineFilter);
 
+      const lang = getMealContentLang(req);
       const meals = await Meal.find(mealQuery).sort({ createdAt: -1 });
-      const { pantry, results } = rankMealsByPantry(meals, raw);
+      const { pantry, results } = rankMealsByPantry(meals, raw, lang);
 
       res.json({
         success: true,
@@ -230,6 +242,7 @@ router.post(
 // @access  Public (can be made private if needed)
 router.get('/', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const { dietType, cuisine, search } = req.query;
     const query = {};
 
@@ -241,19 +254,17 @@ router.get('/', async (req, res) => {
       query.cuisine = cuisine;
     }
 
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } },
-      ];
+    const searchFilter = buildMealSearchFilter(search, lang);
+    if (searchFilter) {
+      Object.assign(query, searchFilter);
     }
 
     const meals = await Meal.find(query).sort({ createdAt: -1 });
+    const mealsOut = meals.map((m) => resolveMealPlain(m.toObject(), lang));
     res.json({
       success: true,
-      count: meals.length,
-      meals,
+      count: mealsOut.length,
+      meals: mealsOut,
     });
   } catch (error) {
     console.error('Get meals error:', error);
@@ -501,6 +512,7 @@ router.get('/:id/reviews', async (req, res) => {
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const meal = await Meal.findById(req.params.id);
     if (!meal) {
       return res.status(404).json({
@@ -510,7 +522,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json({
       success: true,
-      meal,
+      meal: resolveDocOrPlain(meal, lang),
     });
   } catch (error) {
     console.error('Get meal error:', error);

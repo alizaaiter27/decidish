@@ -1,12 +1,13 @@
 import '../models/meal_model.dart';
 import '../services/api_service.dart';
+import '../services/api_locale_params.dart';
 import '../config/api_config.dart';
 
 class FavoritesApiService {
   // Get all favorites
   static Future<List<MealModel>> getFavorites() async {
     final response = await ApiService.get(
-      ApiConfig.favorites,
+      ApiLocaleParams.withMealContentLang(ApiConfig.favorites),
       requireAuth: true,
     );
 
@@ -32,9 +33,11 @@ class FavoritesApiService {
 
   // Add meal to favorites
   static Future<bool> addFavorite(String mealId) async {
-    final response = await ApiService.post(ApiConfig.favorites, {
-      'mealId': mealId,
-    }, requireAuth: true);
+    final response = await ApiService.post(
+      ApiLocaleParams.withMealContentLang(ApiConfig.favorites),
+      {'mealId': mealId},
+      requireAuth: true,
+    );
 
     return response['success'] == true;
   }

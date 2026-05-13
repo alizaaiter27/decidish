@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
-import '../services/auth_service.dart';
+import 'api_locale_params.dart';
+import 'auth_service.dart';
 
 class ApiService {
   // Get headers with authentication token
@@ -12,6 +13,11 @@ class ApiService {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
+
+    final mealLang = ApiLocaleParams.acceptLanguageForMeals;
+    if (mealLang != null) {
+      headers['Accept-Language'] = mealLang;
+    }
 
     if (includeAuth) {
       final token = await AuthService.getToken();

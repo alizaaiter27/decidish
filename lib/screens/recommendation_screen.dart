@@ -4,6 +4,7 @@ import 'package:decidish/services/api_service.dart';
 import 'package:decidish/services/auth_service.dart';
 import 'package:decidish/utils/app_colors.dart';
 import 'package:decidish/l10n/app_strings.dart';
+import 'package:decidish/l10n/locale_controller.dart';
 import 'package:decidish/models/meal_model.dart';
 import 'package:decidish/models/meal_review_model.dart';
 import 'package:decidish/services/favorites_api_service.dart';
@@ -22,7 +23,8 @@ class RecommendationScreen extends StatefulWidget {
   State<RecommendationScreen> createState() => _RecommendationScreenState();
 }
 
-class _RecommendationScreenState extends State<RecommendationScreen> {
+class _RecommendationScreenState extends State<RecommendationScreen>
+    with WidgetsBindingObserver {
   static const int _kLatestReviewsPreview = 2;
 
   MealModel? _meal;
@@ -37,6 +39,33 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
   String? _deletingRatingId;
   bool _triedMealSaving = false;
   bool _triedMealRecorded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    LocaleController.localeNotifier.addListener(_onMealLocaleChanged);
+  }
+
+  @override
+  void dispose() {
+    LocaleController.localeNotifier.removeListener(_onMealLocaleChanged);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _onMealLocaleChanged() {
+    if (mounted && _meal != null) {
+      _refreshMealFromServer();
+    }
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (mounted && _meal != null) {
+      _refreshMealFromServer();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -55,7 +84,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       });
       _loadCurrentUserId();
       _checkIfFavorite();
-      _hydrateMealIfNeeded();
+      _refreshMealFromServer();
       _loadReviewsForCurrentMeal();
     }
   }
@@ -297,17 +326,10 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     );
   }
 
-  /// Fetches full document from API when navigation only passed a thin payload.
-  Future<void> _hydrateMealIfNeeded() async {
+  /// Loads canonical meal for the current app language (`localeTr` merge on server).
+  Future<void> _refreshMealFromServer() async {
     final m = _meal;
     if (m == null || m.id.isEmpty) return;
-    final missingRecipe =
-        (m.description == null || m.description!.trim().isEmpty) &&
-        (m.ingredients == null || m.ingredients!.isEmpty);
-    final missingUrls =
-        (m.recipeSourceUrl == null || m.recipeSourceUrl!.trim().isEmpty) &&
-        (m.recipeVideoUrl == null || m.recipeVideoUrl!.trim().isEmpty);
-    if (!missingRecipe && !missingUrls) return;
     try {
       final full = await MealApiService.getMealById(m.id);
       if (!mounted || full == null) return;

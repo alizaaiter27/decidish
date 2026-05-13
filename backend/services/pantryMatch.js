@@ -2,6 +2,8 @@
  * Match user pantry items to meal ingredient strings (flexible substring / token overlap).
  */
 
+const { resolveMealPlain } = require('../utils/mealLocale');
+
 function normalizePantryItems(items) {
   const out = [];
   const seen = new Set();
@@ -68,8 +70,9 @@ function scoreMealForPantry(meal, pantryNormalized) {
 /**
  * @param {import('mongoose').Document[]} meals
  * @param {string[]} rawPantryItems
+ * @param {'en'|'tr'} [lang='en']
  */
-function rankMealsByPantry(meals, rawPantryItems) {
+function rankMealsByPantry(meals, rawPantryItems, lang = 'en') {
   const pantry = normalizePantryItems(rawPantryItems);
   if (pantry.length === 0) {
     return { pantry, results: [] };
@@ -96,7 +99,7 @@ function rankMealsByPantry(meals, rawPantryItems) {
   scored.sort((a, b) => b.sortKey - a.sortKey);
 
   const results = scored.map(({ meal, pantryMatch }) => {
-    const mealObj = { ...meal };
+    const mealObj = resolveMealPlain({ ...meal }, lang);
     return {
       ...mealObj,
       pantryMatch,

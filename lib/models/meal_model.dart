@@ -30,6 +30,10 @@ class MealModel {
   final String? recipeSourceUrl;
   final String? recipeVideoUrl;
 
+  /// Server: `tr` when Turkish copy from DB was merged; `en` when `lang=tr` but no `localeTr`.
+  /// Omitted on English responses. Client uses this to skip machine translation.
+  final String? displayLocale;
+
   MealModel({
     required this.id,
     required this.name,
@@ -54,6 +58,7 @@ class MealModel {
     this.pantryMatch,
     this.recipeSourceUrl,
     this.recipeVideoUrl,
+    this.displayLocale,
   });
 
   factory MealModel.fromJson(Map<String, dynamic> json) {
@@ -102,6 +107,7 @@ class MealModel {
           : null,
       recipeSourceUrl: json['recipeSourceUrl'] as String?,
       recipeVideoUrl: json['recipeVideoUrl'] as String?,
+      displayLocale: json['displayLocale'] as String?,
     );
   }
 
@@ -147,7 +153,44 @@ class MealModel {
       'pantryMatch': pantryMatch?.toJson(),
       'recipeSourceUrl': recipeSourceUrl,
       'recipeVideoUrl': recipeVideoUrl,
+      'displayLocale': displayLocale,
     };
+  }
+
+  MealModel copyWith({
+    String? name,
+    String? description,
+    List<String>? ingredients,
+    List<String>? ingredientLines,
+    PantryMatchInfo? pantryMatch,
+    String? displayLocale,
+  }) {
+    return MealModel(
+      id: id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      imageUrl: imageUrl,
+      nutrition: nutrition,
+      dietTypes: dietTypes,
+      cuisine: cuisine,
+      ingredients: ingredients ?? this.ingredients,
+      ingredientLines: ingredientLines ?? this.ingredientLines,
+      tags: tags,
+      preparationTime: preparationTime,
+      estimatedCost: estimatedCost,
+      difficulty: difficulty,
+      mealType: mealType,
+      tasteProfile: tasteProfile,
+      cookingMethod: cookingMethod,
+      seasonality: seasonality,
+      complexity: complexity,
+      compatibilityScore: compatibilityScore,
+      scoreBreakdown: scoreBreakdown,
+      pantryMatch: pantryMatch ?? this.pantryMatch,
+      recipeSourceUrl: recipeSourceUrl,
+      recipeVideoUrl: recipeVideoUrl,
+      displayLocale: displayLocale ?? this.displayLocale,
+    );
   }
 }
 

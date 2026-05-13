@@ -58,6 +58,13 @@ const mealSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  /** Turkish display copy for the same meal; canonical EN stays in `name` / `description` / `ingredients*`. */
+  localeTr: {
+    name: { type: String, trim: true },
+    description: { type: String, trim: true },
+    ingredients: [{ type: String, trim: true }],
+    ingredientLines: [{ type: String, trim: true }],
+  },
   tags: [String], // e.g., ['healthy', 'quick', 'comfort-food']
   preparationTime: {
     type: Number, // in minutes

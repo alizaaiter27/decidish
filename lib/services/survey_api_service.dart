@@ -1,5 +1,6 @@
 import '../config/api_config.dart';
 import '../models/meal_model.dart';
+import 'api_locale_params.dart';
 import 'api_service.dart';
 
 /// Quick "Help me decide" survey — home-cooked meals only (API uses your meal DB).
@@ -12,7 +13,7 @@ class SurveyApiService {
     required String timeFeeling,
   }) async {
     final response = await ApiService.post(
-      '${ApiConfig.meals}/survey',
+      ApiLocaleParams.withMealContentLang('${ApiConfig.meals}/survey'),
       {
         'mood': mood,
         'mealType': mealType,

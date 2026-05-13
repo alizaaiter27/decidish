@@ -13,6 +13,8 @@ const {
   hasPreferredCuisines,
   pickRandomizedTopFromSorted,
 } = require('../services/preferenceUtils');
+const { getMealContentLang, resolveDocOrPlain } = require('../utils/mealLocale');
+const { subsampleArray, DEFAULT_MAX_CANDIDATES } = require('../services/mealCandidatePool');
 
 const router = express.Router();
 
@@ -23,6 +25,7 @@ router.use(protect);
 // @access  Private
 router.get('/', async (req, res) => {
   try {
+    const lang = getMealContentLang(req);
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({
@@ -150,6 +153,8 @@ router.get('/', async (req, res) => {
       meals = await Meal.find(withCuisine({}));
     }
 
+    meals = subsampleArray(meals, DEFAULT_MAX_CANDIDATES);
+
     const ctx = await loadScoringContext(
       user._id,
       meals.map((m) => m._id)
@@ -195,7 +200,7 @@ router.get('/', async (req, res) => {
 
     res.json({
       success: true,
-      meal: recommendedMeal,
+      meal: resolveDocOrPlain(recommendedMeal, lang),
       recommendationContext: {
         currentMealType,
         score: top.score,
