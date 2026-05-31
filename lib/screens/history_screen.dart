@@ -299,86 +299,88 @@ class _HistoryScreenState extends State<HistoryScreen>
                               ),
                             ),
                             child: GestureDetector(
-                            onTap: meal == null
-                                ? null
-                                : () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      '/recommendation',
-                                      arguments: meal,
-                                    );
-                                  },
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: MealNetworkImage(
-                                      imageUrl: meal?.imageUrl,
-                                      width: 70,
-                                      height: 70,
-                                      fit: BoxFit.cover,
+                              onTap: meal == null
+                                  ? null
+                                  : () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/recommendation',
+                                        arguments: meal,
+                                      );
+                                    },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
-                                      iconSize: 32,
+                                      child: MealNetworkImage(
+                                        imageUrl: meal?.imageUrl,
+                                        width: 70,
+                                        height: 70,
+                                        fit: BoxFit.cover,
+                                        borderRadius: BorderRadius.circular(12),
+                                        iconSize: 32,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          meal?.name ?? strings.unknownMeal,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.textDark,
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            meal?.name ?? strings.unknownMeal,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textDark,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          date,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppColors.textLight,
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            date,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.textLight,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.arrow_forward_ios,
-                                      color: AppColors.textLight,
-                                      size: 16,
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: AppColors.textLight,
+                                        size: 16,
+                                      ),
+                                      onPressed: meal == null
+                                          ? null
+                                          : () {
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/recommendation',
+                                                arguments: meal,
+                                              );
+                                            },
                                     ),
-                                    onPressed: meal == null
-                                        ? null
-                                        : () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              '/recommendation',
-                                              arguments: meal,
-                                            );
-                                          },
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
                             ),
                           );
                         },

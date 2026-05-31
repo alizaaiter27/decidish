@@ -53,10 +53,7 @@ class _MealReviewSheetState extends State<MealReviewSheet> {
           children: [
             Text(
               widget.mealName,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(

@@ -207,97 +207,99 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                             ),
                             child: GestureDetector(
                               onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/recommendation',
-                                arguments: meal,
-                              );
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 2),
-                                    spreadRadius: 0,
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: MealNetworkImage(
-                                      imageUrl: meal.imageUrl,
-                                      width: 70,
-                                      height: 70,
-                                      fit: BoxFit.cover,
-                                      borderRadius: BorderRadius.circular(12),
-                                      iconSize: 32,
+                                Navigator.pushNamed(
+                                  context,
+                                  '/recommendation',
+                                  arguments: meal,
+                                );
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 2),
+                                      spreadRadius: 0,
                                     ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          meal.name,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.textDark,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        if (meal.cuisine != null) ...[
-                                          const SizedBox(height: 4),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: MealNetworkImage(
+                                        imageUrl: meal.imageUrl,
+                                        width: 70,
+                                        height: 70,
+                                        fit: BoxFit.cover,
+                                        borderRadius: BorderRadius.circular(12),
+                                        iconSize: 32,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
                                           Text(
-                                            meal.cuisine!,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.textLight,
+                                            meal.name,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.textDark,
                                             ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                        ],
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.local_fire_department,
-                                              size: 14,
-                                              color: AppColors.accent,
-                                            ),
-                                            const SizedBox(width: 4),
+                                          if (meal.cuisine != null) ...[
+                                            const SizedBox(height: 4),
                                             Text(
-                                              '${meal.nutrition.calories} kcal',
+                                              meal.cuisine!,
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: AppColors.textLight,
                                               ),
                                             ),
                                           ],
-                                        ),
-                                      ],
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.local_fire_department,
+                                                size: 14,
+                                                color: AppColors.accent,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '${meal.nutrition.calories} kcal',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppColors.textLight,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.favorite,
-                                      color: AppColors.error,
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.favorite,
+                                        color: AppColors.error,
+                                      ),
+                                      onPressed: () => _removeFavorite(meal.id),
                                     ),
-                                    onPressed: () => _removeFavorite(meal.id),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
                             ),
                           );
                         },

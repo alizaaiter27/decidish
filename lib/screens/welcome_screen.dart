@@ -70,89 +70,95 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-              // Logo with animation
-              AnimatedBuilder(
-                animation: _logoAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _logoAnimation.value,
-                    child: Opacity(
-                      opacity: _logoAnimation.value,
-                      child: const AppLogo(size: 200),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 40),
-
-              // App Name with animation
-              AnimatedBuilder(
-                animation: _textAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, 20 * (1 - _textAnimation.value)),
-                    child: Opacity(
-                      opacity: _textAnimation.value,
-                      child: const Text(
-                        'DeciDish',
-                        style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-
-              // Tagline with animation
-              AnimatedBuilder(
-                animation: _textAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, 20 * (1 - _textAnimation.value)),
-                    child: Opacity(
-                      opacity: _textAnimation.value,
-                      child: Text(
-                        '"${strings.feedTagline}"',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontStyle: FontStyle.italic,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 100),
-
-              // Get Started Button with animation
-              AnimatedBuilder(
-                animation: _buttonAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, 30 * (1 - _buttonAnimation.value)),
-                    child: Opacity(
-                      opacity: _buttonAnimation.value,
-                      child: _AnimatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/login');
+                      // Logo with animation
+                      AnimatedBuilder(
+                        animation: _logoAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _logoAnimation.value,
+                            child: Opacity(
+                              opacity: _logoAnimation.value,
+                              child: const AppLogo(size: 200),
+                            ),
+                          );
                         },
-                        child: Text(
-                          strings.getStarted,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                      const SizedBox(height: 40),
+
+                      // App Name with animation
+                      AnimatedBuilder(
+                        animation: _textAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, 20 * (1 - _textAnimation.value)),
+                            child: Opacity(
+                              opacity: _textAnimation.value,
+                              child: const Text(
+                                'DeciDish',
+                                style: TextStyle(
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Tagline with animation
+                      AnimatedBuilder(
+                        animation: _textAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, 20 * (1 - _textAnimation.value)),
+                            child: Opacity(
+                              opacity: _textAnimation.value,
+                              child: Text(
+                                '"${strings.feedTagline}"',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontStyle: FontStyle.italic,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 100),
+
+                      // Get Started Button with animation
+                      AnimatedBuilder(
+                        animation: _buttonAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(
+                              0,
+                              30 * (1 - _buttonAnimation.value),
+                            ),
+                            child: Opacity(
+                              opacity: _buttonAnimation.value,
+                              child: _AnimatedButton(
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/login',
+                                  );
+                                },
+                                child: Text(
+                                  strings.getStarted,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

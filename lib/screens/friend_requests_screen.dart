@@ -151,10 +151,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
                                 },
                         ),
                         IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            color: AppColors.error,
-                          ),
+                          icon: const Icon(Icons.close, color: AppColors.error),
                           onPressed: _processing
                               ? null
                               : () {

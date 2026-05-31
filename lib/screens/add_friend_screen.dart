@@ -181,7 +181,9 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : Text(strings.add),
                       ),
