@@ -61,7 +61,7 @@ class AppStrings {
   String get allergies => _isTurkish ? 'Alerjiler' : 'Allergies';
   String get allergyHelp => _isTurkish
       ? 'Arayıp seçmek için alana dokunun. Bunu önerileri yönlendirmek için kullanırız - şiddetli alerjiniz varsa malzemeleri her zaman doğrulayın.'
-      : 'Tap the field to search and select. We use this to steer recommendations-always confirm ingredients if you have a severe allergy.';
+      : 'Tap the field to search and select. We use this to steer recommendations — always confirm ingredients if you have a severe allergy.';
   String get ingredientsToAvoid =>
       _isTurkish ? 'Kaçınılacak malzemeler' : 'Ingredients to avoid';
   String get ingredientsToAvoidHelp => _isTurkish
@@ -155,7 +155,7 @@ class AppStrings {
       : 'Password must be at least 6 characters';
   String get loginFailed => _isTurkish ? 'Giriş başarısız' : 'Login failed';
   String get enterYourEmail =>
-      _isTurkish ? 'E-postanizi girin' : 'Enter your email';
+      _isTurkish ? 'E-postanızı girin' : 'Enter your email';
   String get enterYourPassword =>
       _isTurkish ? 'Şifrenizi girin' : 'Enter your password';
   String get forgotPassword =>
@@ -200,7 +200,7 @@ class AppStrings {
   String get foodPreferences =>
       _isTurkish ? 'Yemek tercihleri' : 'Food Preferences';
   String get likesDislikesQuestion => _isTurkish
-      ? 'Neleri seviyor, neleri sevmiyorsun?'
+      ? 'Neleri seviyorsun, neleri sevmiyorsun?'
       : 'What do you like and dislike?';
 
   String get profile => _isTurkish ? 'Profil' : 'Profile';
@@ -227,7 +227,7 @@ class AppStrings {
   String get helpAndSupport =>
       _isTurkish ? 'Yardım ve destek' : 'Help & Support';
   String get helpAndSupportSubtitle => _isTurkish
-      ? 'Yardım al veya destekle iletişime geç'
+      ? 'Yardım al veya destek ekibiyle iletişime geç'
       : 'Get help or contact support';
   String get about => _isTurkish ? 'Hakkında' : 'About';
   String get comingSoonNotificationSettings => _isTurkish
@@ -305,7 +305,7 @@ class AppStrings {
   String get social => _isTurkish ? 'Sosyal' : 'Social';
   String get community => _isTurkish ? 'Topluluk' : 'Community';
   String get feedTagline =>
-      _isTurkish ? 'Karar ver.Ye.Keyfini çıkar' : 'Decide.Eat.Enjoy';
+      _isTurkish ? 'Karar ver. Ye. Keyfini çıkar' : 'Decide. Eat. Enjoy';
   String streakLabel(int count) => _isTurkish ? '$count seri' : '$count streak';
   String get newPost => _isTurkish ? 'Yeni gönderi' : 'New post';
   String get couldNotSaveRating =>
@@ -624,6 +624,34 @@ class AppStrings {
       : 'Tap a meal for a full preview — Back returns you here. Close this sheet when you are done.';
   String matchPoints(int points) =>
       _isTurkish ? 'Eşleşme $points puan' : 'Match $points pts';
+
+  // Daily streak
+  String get dailyStreak => _isTurkish ? 'Günlük seri' : 'Daily Streak';
+  String get checkIn => _isTurkish ? 'İşaretle' : 'Check In';
+  String get checkedInDone => _isTurkish ? 'Yapıldı' : 'Done';
+  String checkedInStreak(int days) => days == 1
+      ? (_isTurkish ? 'Giriş yapıldı! 1 günlük seri' : 'Checked in! 1-day streak')
+      : (_isTurkish
+            ? 'Giriş yapıldı! $days günlük seri'
+            : 'Checked in! $days-day streak');
+  String get checkInFailed => _isTurkish
+      ? 'Giriş yapılamadı. Lütfen tekrar deneyin.'
+      : 'Check-in failed. Please try again.';
+  String bestStreak(int days) =>
+      _isTurkish ? 'En iyi: $days gün' : 'Best: $days days';
+
+  // Review sheet
+  String get stars => _isTurkish ? 'Yıldız' : 'Stars';
+  String get writtenReviewOptional =>
+      _isTurkish ? 'Yazılı yorum (isteğe bağlı)' : 'Written review (optional)';
+  String get saveReview => _isTurkish ? 'Yorumu kaydet' : 'Save review';
+
+  // Meal type selector
+  String get searchMealTypesHint =>
+      _isTurkish ? 'Öğün türü ara…' : 'Search meal types...';
+  String get autoDetectByTime => _isTurkish
+      ? 'Saate göre otomatik belirle'
+      : 'Auto-detect based on time';
 }
 
 class _AppStringsDelegate extends LocalizationsDelegate<AppStrings> {

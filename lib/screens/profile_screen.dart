@@ -83,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 context,
               ).logoutError(e.toString().replaceAll('ApiException: ', '')),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -493,7 +493,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(Icons.error_outline, size: 80, color: AppColors.textLight),
             const SizedBox(height: 20),
             Text(
-              _error ?? AppStrings.of(context).somethingWentWrong,
+              AppStrings.of(context).somethingWentWrong,
               style: TextStyle(fontSize: 18, color: AppColors.textLight),
               textAlign: TextAlign.center,
             ),
@@ -608,7 +608,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
       final msg = e is ApiException ? e.message : e.toString();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: AppColors.error),
         );
         setState(() => _submitting = false);
       }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
+import '../l10n/app_strings.dart';
 
 class MealTypeSelector extends StatefulWidget {
   final String? selectedMealType;
@@ -51,7 +52,7 @@ class _MealTypeSelectorState extends State<MealTypeSelector> {
       constraints: BoxConstraints(maxHeight: availableHeight),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -73,10 +74,10 @@ class _MealTypeSelectorState extends State<MealTypeSelector> {
                 size: 24,
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'What type of meal are you looking for?',
-                  style: TextStyle(
+                  AppStrings.of(context).questionMealTypeTitle,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textDark,
@@ -95,7 +96,7 @@ class _MealTypeSelectorState extends State<MealTypeSelector> {
           TextField(
             onChanged: (value) => setState(() => _searchQuery = value),
             decoration: InputDecoration(
-              hintText: 'Search meal types...',
+              hintText: AppStrings.of(context).searchMealTypesHint,
               prefixIcon: const Icon(Icons.search, color: AppColors.textLight),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -230,10 +231,10 @@ class _MealTypeSelectorState extends State<MealTypeSelector> {
                 // Don't pop here - let the callback handle navigation
               },
               icon: const Icon(Icons.auto_awesome, size: 18),
-              label: const Text('Auto-detect based on time'),
+              label: Text(AppStrings.of(context).autoDetectByTime),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

@@ -15,6 +15,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   List<dynamic> _messages = [];
   bool _loading = true;
+  bool _sending = false;
   final TextEditingController _controller = TextEditingController();
   String? _friendId;
   String _friendName = '';
@@ -74,7 +75,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _send() async {
     final text = _controller.text.trim();
-    if (text.isEmpty || _friendId == null) return;
+    if (text.isEmpty || _friendId == null || _sending) return;
+    setState(() => _sending = true);
     try {
       await MessageService.sendMessage(_friendId!, text);
       _controller.clear();
@@ -86,6 +88,8 @@ class _ChatScreenState extends State<ChatScreen> {
           content: Text(AppStrings.of(context).errorSendingMessage('$e')),
         ),
       );
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 
@@ -221,7 +225,16 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   ),
                 ),
-                IconButton(icon: const Icon(Icons.send), onPressed: _send),
+                IconButton(
+                  icon: _sending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send),
+                  onPressed: _sending ? null : _send,
+                ),
               ],
             ),
           ),

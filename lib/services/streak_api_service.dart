@@ -59,7 +59,7 @@ class StreakModel {
   String get streakDisplayText {
     if (current == 0) return 'Start your streak!';
     if (current == 1) return '1 day streak!';
-    return '$current days streak!';
+    return '$current-day streak!';
   }
 
   // Get motivational message based on streak

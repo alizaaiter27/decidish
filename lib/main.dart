@@ -41,11 +41,7 @@ class DeciDishApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      // You can also control brightness if needed:
-      // brightness: Brightness.light,
-    );
+    final colorScheme = ColorScheme.fromSeed(seedColor: AppColors.primary);
 
     return ValueListenableBuilder<Locale?>(
       valueListenable: LocaleController.localeNotifier,
@@ -66,6 +62,19 @@ class DeciDishApp extends StatelessWidget {
             colorScheme: colorScheme,
             scaffoldBackgroundColor: AppColors.background,
           ),
+          builder: (context, child) {
+            // Clamp text scaling so very large accessibility sizes don't
+            // break fixed-height cards and headlines across the app.
+            final mq = MediaQuery.of(context);
+            final clamped = mq.textScaler.clamp(
+              minScaleFactor: 0.9,
+              maxScaleFactor: 1.3,
+            );
+            return MediaQuery(
+              data: mq.copyWith(textScaler: clamped),
+              child: child!,
+            );
+          },
           home: const WelcomeScreen(),
           onGenerateRoute: (settings) {
             switch (settings.name) {

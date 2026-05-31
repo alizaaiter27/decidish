@@ -79,7 +79,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppStrings.of(context).removedFromFavorites),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             duration: Duration(milliseconds: 500),
           ),
         );
@@ -93,7 +93,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                 context,
               ).genericError(e.toString().replaceAll('ApiException: ', '')),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -143,7 +143,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              _error!,
+                              strings.somethingWentWrong,
                               style: TextStyle(
                                 fontSize: 18,
                                 color: AppColors.textLight,
@@ -187,12 +187,26 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                   : RefreshIndicator(
                       onRefresh: _loadFavorites,
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
                         itemCount: _favorites.length,
                         itemBuilder: (context, index) {
                           final meal = _favorites[index];
-                          return GestureDetector(
-                            onTap: () {
+                          return TweenAnimationBuilder<double>(
+                            key: ValueKey(meal.id),
+                            tween: Tween<double>(begin: 0, end: 1),
+                            duration: Duration(
+                              milliseconds: 250 + (index.clamp(0, 8) * 40),
+                            ),
+                            curve: Curves.easeOut,
+                            builder: (context, t, child) => Opacity(
+                              opacity: t,
+                              child: Transform.translate(
+                                offset: Offset(0, 16 * (1 - t)),
+                                child: child,
+                              ),
+                            ),
+                            child: GestureDetector(
+                              onTap: () {
                               Navigator.pushNamed(
                                 context,
                                 '/recommendation',
@@ -283,6 +297,7 @@ class _FavoritesScreenState extends State<FavoritesScreen>
                                   ),
                                 ],
                               ),
+                            ),
                             ),
                           );
                         },

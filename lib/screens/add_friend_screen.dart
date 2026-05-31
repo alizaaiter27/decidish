@@ -20,6 +20,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   List<dynamic> _results = [];
   bool _loading = false;
   String? _error;
+  final Set<String> _sendingIds = {};
 
   @override
   void dispose() {
@@ -79,6 +80,8 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
       );
       return;
     }
+    if (_sendingIds.contains(userId)) return;
+    setState(() => _sendingIds.add(userId));
     try {
       await FriendService.sendRequest(userId);
       if (!mounted) return;
@@ -95,7 +98,11 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
       final msg = e is ApiException
           ? e.message
           : e.toString().replaceAll('ApiException: ', '');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => _sendingIds.remove(userId));
     }
   }
 
@@ -148,7 +155,10 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12.0),
-                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(color: AppColors.error),
+                ),
               ),
             Expanded(
               child: ListView.builder(
@@ -159,13 +169,21 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                       ? (u['name']?.toString() ?? strings.unknownUserName())
                       : strings.unknownUserName();
                   final email = u is Map ? (u['email']?.toString() ?? '') : '';
+                  final id = FriendService.friendIdFromMap(u);
+                  final sending = _sendingIds.contains(id);
                   return Card(
                     child: ListTile(
                       title: Text(name),
                       subtitle: Text(email),
                       trailing: FilledButton.tonal(
-                        onPressed: () => _sendRequest(u),
-                        child: Text(strings.add),
+                        onPressed: sending ? null : () => _sendRequest(u),
+                        child: sending
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Text(strings.add),
                       ),
                     ),
                   );

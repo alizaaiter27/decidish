@@ -1,4 +1,5 @@
 import 'package:decidish/utils/app_colors.dart';
+import 'package:decidish/l10n/app_strings.dart';
 import 'package:flutter/material.dart';
 
 /// Bottom sheet to edit star rating and optional written review for a meal.
@@ -58,9 +59,9 @@ class _MealReviewSheetState extends State<MealReviewSheet> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Stars',
-              style: TextStyle(fontSize: 12, color: AppColors.textLight),
+            Text(
+              AppStrings.of(context).stars,
+              style: const TextStyle(fontSize: 12, color: AppColors.textLight),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -80,9 +81,9 @@ class _MealReviewSheetState extends State<MealReviewSheet> {
               controller: _controller,
               maxLines: 4,
               maxLength: 2000,
-              decoration: const InputDecoration(
-                hintText: 'Written review (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: AppStrings.of(context).writtenReviewOptional,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
@@ -91,7 +92,7 @@ class _MealReviewSheetState extends State<MealReviewSheet> {
                 final text = _controller.text.trim();
                 Navigator.pop(context, (_stars, text));
               },
-              child: const Text('Save review'),
+              child: Text(AppStrings.of(context).saveReview),
             ),
           ],
         ),

@@ -160,7 +160,7 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.of(context).preferencesSaved),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
       Navigator.pop(context);
@@ -169,7 +169,7 @@ class _EnhancedPreferencesScreenState extends State<EnhancedPreferencesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppStrings.of(context).errorSavingPreferences('$e')),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     } finally {

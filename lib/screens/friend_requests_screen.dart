@@ -13,7 +13,8 @@ class FriendRequestsScreen extends StatefulWidget {
 class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
   List<dynamic> _requests = [];
   bool _loading = true;
-  String? _error;
+  bool _hasError = false;
+  bool _processing = false;
 
   @override
   void initState() {
@@ -24,7 +25,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
   Future<void> _loadRequests() async {
     setState(() {
       _loading = true;
-      _error = null;
+      _hasError = false;
     });
 
     try {
@@ -38,7 +39,7 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _hasError = true;
           _loading = false;
         });
       }
@@ -46,6 +47,8 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
   }
 
   Future<void> _accept(String id) async {
+    if (_processing) return;
+    setState(() => _processing = true);
     try {
       await FriendService.acceptRequest(id);
       await _loadRequests();
@@ -56,12 +59,19 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.of(context).genericError('$e'))),
+        SnackBar(
+          content: Text(AppStrings.of(context).somethingWentWrong),
+          backgroundColor: AppColors.error,
+        ),
       );
+    } finally {
+      if (mounted) setState(() => _processing = false);
     }
   }
 
   Future<void> _decline(String id) async {
+    if (_processing) return;
+    setState(() => _processing = true);
     try {
       await FriendService.declineRequest(id);
       await _loadRequests();
@@ -72,8 +82,13 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppStrings.of(context).genericError('$e'))),
+        SnackBar(
+          content: Text(AppStrings.of(context).somethingWentWrong),
+          backgroundColor: AppColors.error,
+        ),
       );
+    } finally {
+      if (mounted) setState(() => _processing = false);
     }
   }
 
@@ -90,8 +105,20 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? Center(child: Text(_error!))
+          : _hasError
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(strings.somethingWentWrong),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: _loadRequests,
+                    child: Text(strings.retry),
+                  ),
+                ],
+              ),
+            )
           : _requests.isEmpty
           ? Center(child: Text(strings.noIncomingRequests))
           : ListView.builder(
@@ -112,18 +139,28 @@ class _FriendRequestsScreenState extends State<FriendRequestsScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.check, color: Colors.green),
-                          onPressed: () {
-                            final id = req['_id'] ?? req['id'];
-                            if (id != null) _accept(id.toString());
-                          },
+                          icon: const Icon(
+                            Icons.check,
+                            color: AppColors.success,
+                          ),
+                          onPressed: _processing
+                              ? null
+                              : () {
+                                  final id = req['_id'] ?? req['id'];
+                                  if (id != null) _accept(id.toString());
+                                },
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () {
-                            final id = req['_id'] ?? req['id'];
-                            if (id != null) _decline(id.toString());
-                          },
+                          icon: const Icon(
+                            Icons.close,
+                            color: AppColors.error,
+                          ),
+                          onPressed: _processing
+                              ? null
+                              : () {
+                                  final id = req['_id'] ?? req['id'];
+                                  if (id != null) _decline(id.toString());
+                                },
                         ),
                       ],
                     ),

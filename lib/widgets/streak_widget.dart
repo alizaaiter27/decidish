@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
+import '../l10n/app_strings.dart';
 import '../services/streak_api_service.dart';
 
 class StreakWidget extends StatefulWidget {
@@ -40,11 +41,13 @@ class _StreakWidgetState extends State<StreakWidget>
     setState(() => _isLoading = true);
     try {
       final streak = await StreakApiService.getStreak();
+      if (!mounted) return;
       setState(() {
         _streak = streak;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -57,42 +60,43 @@ class _StreakWidgetState extends State<StreakWidget>
 
     try {
       final updatedStreak = await StreakApiService.checkIn();
+      if (!mounted) return;
       setState(() {
         _streak = updatedStreak;
         _isCheckingIn = false;
       });
 
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 8),
-                Text('Check-in successful! ${updatedStreak.streakDisplayText}'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: AppColors.white),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  AppStrings.of(context).checkedInStreak(updatedStreak.current),
+                ),
+              ),
+            ],
           ),
-        );
-      }
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
 
       // Celebration animation
       _animationController.reverse();
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isCheckingIn = false);
       _animationController.reverse();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Check-in failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.of(context).checkInFailed),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -161,7 +165,7 @@ class _StreakWidgetState extends State<StreakWidget>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Daily Streak',
+                      AppStrings.of(context).dailyStreak,
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textLight,
@@ -206,23 +210,23 @@ class _StreakWidgetState extends State<StreakWidget>
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
+                                      AppColors.white,
                                     ),
                                   ),
                                 )
-                              : const Row(
+                              : Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.add,
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       size: 16,
                                     ),
-                                    SizedBox(width: 4),
+                                    const SizedBox(width: 4),
                                     Text(
-                                      'Check In',
-                                      style: TextStyle(
-                                        color: Colors.white,
+                                      AppStrings.of(context).checkIn,
+                                      style: const TextStyle(
+                                        color: AppColors.white,
                                         fontWeight: FontWeight.w600,
                                         fontSize: 12,
                                       ),
@@ -254,7 +258,7 @@ class _StreakWidgetState extends State<StreakWidget>
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'Done',
+                        AppStrings.of(context).checkedInDone,
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w600,
@@ -283,7 +287,7 @@ class _StreakWidgetState extends State<StreakWidget>
                 Icon(Icons.emoji_events, size: 14, color: Colors.amber[600]),
                 const SizedBox(width: 4),
                 Text(
-                  'Best: ${_streak!.longest} days',
+                  AppStrings.of(context).bestStreak(_streak!.longest),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.amber[700],

@@ -80,7 +80,7 @@ class _HelpMeDecideSurveyState extends State<HelpMeDecideSurvey> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = e.toString();
+        _error = AppStrings.of(context).tryAgainGeneric;
       });
     }
   }

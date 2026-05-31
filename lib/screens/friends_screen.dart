@@ -23,6 +23,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
   List<dynamic> _searchResults = [];
   bool _searchLoading = false;
   String? _searchError;
+  final Set<String> _sendingIds = {};
 
   bool _loading = true;
   String? _error;
@@ -143,6 +144,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
       );
       return;
     }
+    if (_sendingIds.contains(userId)) return;
+    setState(() => _sendingIds.add(userId));
     try {
       await FriendService.sendRequest(userId);
       if (!mounted) return;
@@ -159,7 +162,11 @@ class _FriendsScreenState extends State<FriendsScreen> {
       final msg = e is ApiException
           ? e.message
           : e.toString().replaceAll('ApiException: ', '');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => _sendingIds.remove(userId));
     }
   }
 
@@ -387,7 +394,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                           padding: const EdgeInsets.all(16),
                           child: Text(
                             _searchError!,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: AppColors.error),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -416,6 +423,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
                           final email = u is Map
                               ? (u['email']?.toString() ?? '')
                               : '';
+                          final id = FriendService.friendIdFromMap(u);
+                          final sending = _sendingIds.contains(id);
                           return Padding(
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                             child: Card(
@@ -423,8 +432,18 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                 title: Text(name),
                                 subtitle: email.isNotEmpty ? Text(email) : null,
                                 trailing: FilledButton.tonal(
-                                  onPressed: () => _sendRequest(u),
-                                  child: Text(strings.add),
+                                  onPressed: sending
+                                      ? null
+                                      : () => _sendRequest(u),
+                                  child: sending
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(strings.add),
                                 ),
                               ),
                             ),
@@ -546,7 +565,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                                     IconButton(
                                       icon: const Icon(
                                         Icons.person_remove_outlined,
-                                        color: Colors.red,
+                                        color: AppColors.error,
                                       ),
                                       tooltip: strings.remove,
                                       onPressed: id.isEmpty

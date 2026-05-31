@@ -136,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('ApiException: ', '')),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -242,8 +242,8 @@ class _LoginScreenState extends State<LoginScreen>
                                                 ? Icons.check_circle
                                                 : Icons.error_outline,
                                             color: _emailOk
-                                                ? Colors.green
-                                                : Colors.red,
+                                                ? AppColors.success
+                                                : AppColors.error,
                                           ),
                                   ),
                                 ),
@@ -279,8 +279,8 @@ class _LoginScreenState extends State<LoginScreen>
                                                 ? Icons.check_circle
                                                 : Icons.error_outline,
                                             color: _passwordOk
-                                                ? Colors.green
-                                                : Colors.red,
+                                                ? AppColors.success
+                                                : AppColors.error,
                                           ),
                                         IconButton(
                                           onPressed: () {

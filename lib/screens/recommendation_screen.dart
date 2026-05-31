@@ -405,6 +405,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     if (_meal == null) return;
     try {
       final favorites = await FavoritesApiService.getFavorites();
+      if (!mounted) return;
       setState(() {
         _isFavorite = favorites.any((fav) => fav.id == _meal!.id);
       });
@@ -421,28 +422,26 @@ class _RecommendationScreenState extends State<RecommendationScreen>
     try {
       if (_isFavorite) {
         await FavoritesApiService.removeFavoriteByMealId(_meal!.id);
+        if (!mounted) return;
         setState(() => _isFavorite = false);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.of(context).removedFromFavorites),
-              backgroundColor: Colors.green,
-              duration: const Duration(milliseconds: 500),
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.of(context).removedFromFavorites),
+            backgroundColor: AppColors.success,
+            duration: const Duration(milliseconds: 500),
+          ),
+        );
       } else {
         await FavoritesApiService.addFavorite(_meal!.id);
+        if (!mounted) return;
         setState(() => _isFavorite = true);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.of(context).addedToFavorites),
-              backgroundColor: Colors.green,
-              duration: const Duration(milliseconds: 500),
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.of(context).addedToFavorites),
+            backgroundColor: AppColors.success,
+            duration: const Duration(milliseconds: 500),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -477,7 +476,7 @@ class _RecommendationScreenState extends State<RecommendationScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppStrings.of(context).savedToHistory),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       } else {

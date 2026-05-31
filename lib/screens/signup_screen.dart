@@ -167,7 +167,7 @@ class _SignUpScreenState extends State<SignUpScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('ApiException: ', '')),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -295,8 +295,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                     ? Icons.check_circle
                                                     : Icons.error_outline,
                                                 color: _nameOk
-                                                    ? Colors.green
-                                                    : Colors.red,
+                                                    ? AppColors.success
+                                                    : AppColors.error,
                                               ),
                                       ),
                                     ),
@@ -335,8 +335,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                     ? Icons.check_circle
                                                     : Icons.error_outline,
                                                 color: _emailOk
-                                                    ? Colors.green
-                                                    : Colors.red,
+                                                    ? AppColors.success
+                                                    : AppColors.error,
                                               ),
                                       ),
                                     ),
@@ -378,8 +378,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                     ? Icons.check_circle
                                                     : Icons.error_outline,
                                                 color: _passwordOk
-                                                    ? Colors.green
-                                                    : Colors.red,
+                                                    ? AppColors.success
+                                                    : AppColors.error,
                                               ),
                                             IconButton(
                                               onPressed: () {
@@ -437,8 +437,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                     ? Icons.check_circle
                                                     : Icons.error_outline,
                                                 color: _confirmOk
-                                                    ? Colors.green
-                                                    : Colors.red,
+                                                    ? AppColors.success
+                                                    : AppColors.error,
                                               ),
                                             IconButton(
                                               onPressed: () {

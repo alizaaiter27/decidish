@@ -85,7 +85,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
               child: Text(AppStrings.of(context).clear),
             ),
           ],
@@ -119,7 +119,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             content: Text(
               response['message'] ?? AppStrings.of(context).historyCleared,
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         // Reload history to update the UI
@@ -131,7 +131,7 @@ class _HistoryScreenState extends State<HistoryScreen>
             content: Text(
               response['message'] ?? AppStrings.of(context).clearHistoryFailed,
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -143,8 +143,8 @@ class _HistoryScreenState extends State<HistoryScreen>
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppStrings.of(context).genericError(e.toString())),
-          backgroundColor: Colors.red,
+          content: Text(AppStrings.of(context).clearHistoryFailed),
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -285,7 +285,20 @@ class _HistoryScreenState extends State<HistoryScreen>
                               ? _formatDate(item['date'].toString())
                               : strings.unknownDate;
 
-                          return GestureDetector(
+                          return TweenAnimationBuilder<double>(
+                            tween: Tween<double>(begin: 0, end: 1),
+                            duration: Duration(
+                              milliseconds: 250 + (index.clamp(0, 8) * 40),
+                            ),
+                            curve: Curves.easeOut,
+                            builder: (context, t, child) => Opacity(
+                              opacity: t,
+                              child: Transform.translate(
+                                offset: Offset(0, 16 * (1 - t)),
+                                child: child,
+                              ),
+                            ),
+                            child: GestureDetector(
                             onTap: meal == null
                                 ? null
                                 : () {
@@ -365,6 +378,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                                   ),
                                 ],
                               ),
+                            ),
                             ),
                           );
                         },

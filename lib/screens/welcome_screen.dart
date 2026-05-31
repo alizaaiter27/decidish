@@ -61,10 +61,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
               // Logo with animation
               AnimatedBuilder(
                 animation: _logoAnimation,
@@ -110,9 +115,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     offset: Offset(0, 20 * (1 - _textAnimation.value)),
                     child: Opacity(
                       opacity: _textAnimation.value,
-                      child: const Text(
-                        '"Decide.Eat.Enjoy"',
-                        style: TextStyle(
+                      child: Text(
+                        '"${strings.feedTagline}"',
+                        style: const TextStyle(
                           fontSize: 18,
                           fontStyle: FontStyle.italic,
                           color: AppColors.secondary,
@@ -148,8 +153,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   );
                 },
               ),
-            ],
-          ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

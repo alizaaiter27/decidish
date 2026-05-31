@@ -9,4 +9,5 @@ class AppColors {
   static const Color textLight = Color(0xFF666666);
   static const Color white = Color(0xFFFFFFFF);
   static const Color error = Color(0xFFD32F2F);
+  static const Color success = Color(0xFF2E7D32);
 }

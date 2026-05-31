@@ -11,9 +11,6 @@ class ApiConfig {
     return 'http://localhost:3000';
   }
 
-  // If you're testing on a physical device, uncomment and set your computer's IP:
-  // static const String baseUrl = 'http://192.168.1.XXX:3000'; // Replace XXX with your IP
-
   static const String apiPrefix = '/api';
 
   static String get apiBaseUrl => '$baseUrl$apiPrefix';

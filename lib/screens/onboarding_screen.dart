@@ -118,7 +118,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 e.toString().replaceAll('ApiException: ', ''),
               ),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }

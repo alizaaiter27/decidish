@@ -165,7 +165,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 e.toString().replaceAll('ApiException: ', ''),
               ),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -192,7 +192,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(strings.preferencesSaved),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pop(context);
@@ -208,7 +208,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                 e.toString().replaceAll('ApiException: ', ''),
               ),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }

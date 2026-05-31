@@ -37,6 +37,8 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
   Set<String> _decisionIds = {};
   Set<String> _favoriteIds = {};
   final Set<String> _ratingSaving = {};
+  final Set<String> _favSaving = {};
+  final Set<String> _likeSaving = {};
   _FeedTab _feedTab = _FeedTab.all;
   _SocialSub _socialSub = _SocialSub.community;
 
@@ -140,7 +142,9 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
 
   Future<void> _toggleFavorite(MealModel meal) async {
     final id = meal.id;
+    if (_favSaving.contains(id)) return;
     final isFav = _favoriteIds.contains(id);
+    setState(() => _favSaving.add(id));
     try {
       if (isFav) {
         final ok = await FavoritesApiService.removeFavoriteByMealId(id);
@@ -149,7 +153,15 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
         final ok = await FavoritesApiService.addFavorite(id);
         if (ok && mounted) setState(() => _favoriteIds.add(id));
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppStrings.of(context).somethingWentWrong)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _favSaving.remove(id));
+    }
   }
 
   Future<void> _toggleDecision(MealModel meal) async {
@@ -289,6 +301,8 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _togglePostLike(FeedPostModel post) async {
+    if (_likeSaving.contains(post.id)) return;
+    _likeSaving.add(post.id);
     try {
       final res = post.likedByMe
           ? await PostService.unlikePost(post.id)
@@ -306,6 +320,8 @@ class _FeedScreenState extends State<FeedScreen> with WidgetsBindingObserver {
           SnackBar(content: Text(AppStrings.of(context).couldNotUpdateLike)),
         );
       }
+    } finally {
+      _likeSaving.remove(post.id);
     }
   }
 
